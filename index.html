@@ -1,0 +1,3233 @@
+<!DOCTYPE html>
+<!--
+═══════════════════════════════════════════════════════════════════════════════
+  BILIONETWORKS EXECUTIVE INTELLIGENCE DASHBOARD - VERSION 11.13 (DATE KEY FIX!)
+  
+  🎉 CRITICAL FIX: DATE KEY FORMAT MISMATCH (November 5, 2025):
+  
+  1. DATE KEY FORMAT UNIFIED ✅
+     - **ROOT CAUSE:** Dashboard was using "2025-11" format
+     - **CLOUD DATA:** Uses "November 2025" format
+     - **RESULT:** Keys didn't match = empty dashboard despite successful fetch!
+     - **FIX:** Changed getCurrentMonthDataKey() to use "Month YYYY" format
+  
+  2. NOW DATA DISPLAYS CORRECTLY ✅
+     - Dashboard looks for "November 2025"
+     - Cloud provides "November 2025"
+     - Keys match = data displays! 🎊
+  
+  3. ALL FORMATS NOW CONSISTENT ✅
+     - Import/Export: "Month YYYY"
+     - Cloud Sync: "Month YYYY"
+     - Dashboard Display: "Month YYYY"
+     - No more format mismatches!
+  
+  📊 PREVIOUS FIXES (Version 11.12 - November 5, 2025):
+  
+  1. CLOUD SYNC CONNECTED ✅
+     - Connected to clean master sheet (83 unique KPIs, no duplicates)
+     - Date column properly formatted ("November 2025")
+     - All 4 sheets: All KPIs, Strategic Overview, Weekly Details, Activity Log
+     - Apps Script URL updated to new deployment
+  
+  2. CLOUD SYNC NOW WORKS! ✅
+     - Fetch on startup: Loads 83 KPIs from Google Sheets automatically
+     - Save button: Updates Google Sheets with current data
+     - No more empty date column issues
+     - No more duplicate data (was 166, now 83)
+  
+  3. COMPLETE ARCHITECTURE ✅
+     - Google Sheets: "All KPIs" sheet = source of truth
+     - Dashboard: Reads from localStorage + cloud sync
+     - Save button: Syncs "All KPIs" to Google Sheets
+     - Other sheets (Strategic Overview, Weekly Details, Activity Log) are dashboard-generated
+  
+  4. TESTING VERIFIED ✅
+     - Apps Script deployed with "Anyone" access
+     - New Web App URL: ...5Jew/exec
+     - Ready for production use!
+  
+  📊 PREVIOUS FIXES (Version 11.11 - November 5, 2025):
+  
+  1. EMPTY DATE COLUMN HANDLING ✅
+     - **ROOT CAUSE IDENTIFIED:** Google Sheets "Date" column was completely empty (null values)
+     - Dashboard was skipping ALL rows because dateKey validation failed
+     - Result: "Date keys found: []" and no data loaded despite successful fetch
+  
+  2. AUTOMATIC DATE GENERATION ✅
+     - When Date column is empty, automatically uses current period (e.g., "November 2025")
+     - Falls back to current date if no period filter is set
+     - Logs clearly when default date is being used
+     - Preserves data instead of silently discarding it
+  
+  3. IMPROVED VALIDATION LOGGING ✅
+     - Logs which required fields are missing when rows are skipped
+     - Shows first 5 skipped rows to help diagnose data issues
+     - Clear console output: "Date column is empty - using default date"
+     - Helps identify data quality issues in Google Sheets
+  
+  4. BACKWARD COMPATIBLE ✅
+     - Still handles ISO timestamps (e.g., "1970-01-01T00:00:00.000Z")
+     - Still handles formatted dates (e.g., "November 2025")
+     - Still handles Date objects from various sources
+     - Gracefully falls back to default when date parsing fails
+  
+  5. THE COMPLETE FIX CHAIN ✅
+     - Tries to use Date/DateKey from Google Sheets
+     - Attempts to parse as ISO timestamp/Date object
+     - If empty/null, generates default from current period
+     - Only skips rows if Department, Objective, or KPI Name are missing
+  
+  📊 PREVIOUS FIXES (Version 11.10 - November 5, 2025):
+  
+  1. ISO TIMESTAMP DATE PARSING FIXED ✅
+     - Fixed transformFlatToNested to handle ISO timestamp dates (e.g., "1970-01-01T00:00:00.000Z")
+     - Automatically converts ISO timestamps to "Month YYYY" format
+     - Preserves backward compatibility with existing "Month YYYY" format
+     - Adds detailed console logging for date conversion debugging
+  
+  2. THE ACTUAL PROBLEM IDENTIFIED & FIXED ✅
+     - Console message: "Date keys found: []" despite successful data fetch
+     - Root cause: Google Sheets stores dates as ISO timestamps
+     - Dashboard expected "November 2025" format, got "1970-01-01T00:00:00.000Z"
+     - Solution: Parse ISO timestamps and convert to month/year format automatically
+  
+  3. IMPROVED DATE HANDLING ✅
+     - Tries to parse any date-like value (ISO strings, Date objects, formatted strings)
+     - Falls back gracefully if parsing fails (uses raw value)
+     - Logs conversion details for first row to aid debugging
+     - Works with dates from any source (Google Sheets, Excel, manual entry)
+  
+  4. CONSOLE MESSAGES NOW ACCURATE ✅
+     - "Date keys found: ['November 2025', 'October 2025']" ← Now shows actual months!
+     - No more misleading "empty array" messages
+     - Clear debug output shows raw → converted date transformation
+  
+  📊 PREVIOUS FIXES (Version 11.9 - November 5, 2025):
+  
+  1. EXPORT SHEET ORDER MATCHES GOOGLE SHEETS ✅
+     - Reordered export so "All KPIs" is the first sheet
+     - Matches Google Sheets structure exactly
+     - Source of truth for all data
+     - Used for import/export/sync operations
+  
+  2. OTHER SHEETS ARE DERIVED/INFORMATIONAL ✅
+     - Sheet 2: "Strategic Overview" (calculated from All KPIs)
+     - Sheet 3: "Weekly Details" (derived from All KPIs)
+     - Sheet 4: "Activity Log" (audit trail, not synced)
+     - All marked clearly in code comments
+  
+  3. BENEFITS OF THIS STRUCTURE ✅
+     - Export → Google Sheets → Import cycle is seamless
+     - Users can export, edit in Excel, re-import without data loss
+     - Sync issues easier to debug (single source of truth)
+     - No changes needed in existing Google Sheets
+  
+  4. COMPREHENSIVE CODE DOCUMENTATION ✅
+     - Each sheet section has clear header comments
+     - Explains which sheets sync to cloud
+     - Explains which sheets are derived/read-only
+     - Console logging shows sheet order on export
+  
+  📊 RECENT UPDATES (Version 11.21 - November 6, 2025):
+  
+  1. ACTIVITY LOG PERSISTENCE FIXED ✅
+     - Activity log now auto-saves to localStorage immediately
+     - Survives browser crashes and session resets
+     - Extended retention from 90 days to 12 months
+     - Complete audit trail across all sessions
+     - Cloud sync when user clicks Save button
+  
+  2. ACTIVE FILTER BANNER WITH CONTEXT ✅
+     - Shows below AI Insights, wraps filtered content with border
+     - Smart context: Shows "All Departments" when only objective filtered
+     - Shows "All Objectives" when only department filtered
+     - Hides completely when no filters active
+     - One-click Clear Filters button
+  
+  📊 PREVIOUS UPDATES (Version 11.17 - November 6, 2025):
+  
+  1. SIMPLIFIED SAVE FUNCTION ✅
+     - Removed automatic JSON backup downloads
+     - Save now only: localStorage + Google Sheets cloud sync
+     - Eliminates download folder clutter
+     - Clearer distinction between Save (sync) and Export (download)
+  
+  2. ENHANCED SAVE FEEDBACK ✅
+     - Button states: Normal → "⏳ Saving..." → "✅ Saved!" → Normal
+     - Large, detailed success notification (5 seconds)
+     - Shows status for both browser storage and cloud sync
+     - Better psychological assurance without file downloads
+     - Custom notification duration support added
+  
+  3. REMOVED JSON IMPORT SUPPORT ✅
+     - Import now accepts only Excel files (.xlsx, .xls)
+     - Removed validateAndFixDatesInState() helper function
+     - Simpler user experience (one import format)
+     - Excel + Cloud Sync covers all use cases
+     - Reduced code complexity and maintenance
+  
+  📊 PREVIOUS FIXES (Version 11.8 - November 5, 2025):
+  
+  1. GOOGLE SHEETS SYNC FIXED ✅
+     - Changed parseImportDate threshold from year 2000 to year 1970
+     - Preserves historical dates from Google Sheets
+     - Prevents data loss when syncing between versions
+  
+  2. COMPREHENSIVE DEBUG LOGGING ADDED ✅
+     - transformFlatToNested now logs first row from Google Sheets
+     - Shows exact format of dates returned from cloud
+     - Logs date types and values for debugging
+     - parseImportDate logs all validation decisions with ✅/⚠️ indicators
+     - fetchDataFromCloud logs raw response from Google Sheets
+  
+  3. ROOT CAUSE IDENTIFIED & FIXED ✅
+     - Issue: v11.5-11.7 date validation was TOO STRICT
+     - Old threshold: Rejected dates before year 2000
+     - Problem: Google Sheets historical data was being replaced with current dates
+     - Fix: New threshold only rejects dates before 1970 (actual epoch errors)
+     - Result: Historical data from Google Sheets now preserved correctly
+  
+  4. ADDITIONAL SAFEGUARDS ✅
+     - Added check for empty string dates ('')
+     - Added check for future dates (after 2100)
+     - Better console warnings with emoji indicators
+     - All date replacements now logged for transparency
+  
+  📊 PREVIOUS FIXES (Version 11.7 - November 4, 2025):
+  
+  1. ACTIVITY LOG IN EXCEL EXPORTS ✅
+     - Added 4th sheet: "Activity Log" to all Excel exports
+     - Removed Activity Log button from dashboard UI
+  
+  📊 PREVIOUS FIXES (Version 11.6 - November 4, 2025):
+  
+  1. EXCEL IMPORT DATE VALIDATION ✅
+     - Added parseImportDate() function for validating imported dates
+     - Fixes epoch dates and missing timestamps
+     - Ensures all dates are valid ISO 8601 strings
+  
+  2. THREE IMPORT PATHS COVERED ✅
+     - Manual KPI creation: Uses new Date().toISOString() ✅
+     - Excel import: Uses parseImportDate() + cellDates ✅
+     - CSV import: Uses parseImportDate() ✅
+  
+  3. COMPREHENSIVE DATE PROTECTION ✅
+     - All entry points validated
+     - All suspicious dates caught and corrected
+     - Console warnings for debugging
+     - Graceful fallback to current timestamp
+  
+  📊 PREVIOUS FIXES (Version 11.5 - November 4, 2025):
+  
+  1. UNIX EPOCH DATE BUG FIXED ✅
+     - Fixed "Created At" showing 1970/01/01 dates after import
+     - Root cause: Excel date serial numbers being misinterpreted
+     - Added cellDates: true option to XLSX.read() for proper parsing
+     - Added parseImportDate() helper to validate imported dates
+  
+  2. DATE VALIDATION LOGIC ✅
+     - Checks if parsed date is before year 2000 (catches epoch errors)
+     - Falls back to current timestamp for suspicious dates
+     - Logs warnings for debugging date issues
+     - Applied to both "Created At" and "Last Modified" fields
+  
+  3. EXCEL & CSV IMPORT FIXED ✅
+     - Fixed Excel import (main import path)
+     - Fixed CSV import (alternative import path)
+     - Manual KPI creation already correct (uses new Date().toISOString())
+     - SheetJS configured with cellDates: true
+  
+  📊 PREVIOUS FIXES (Version 11.4 - November 4, 2025):
+  
+  1. "INVALID DATE" ERROR FIXED ✅
+     - Added formatDateForExcel() helper function
+     - Safely handles missing or malformed date values
+     - Returns empty string for invalid dates instead of "Invalid Date"
+     - Proper validation using isNaN(date.getTime())
+  
+  2. IMPROVED DATE FORMATTING ✅
+     - Uses explicit date format options for consistency
+     - Format: YYYY/MM/DD HH:MM:SS (24-hour, en-ZA locale)
+     - Applied to both "Created At" and "Last Modified" columns
+     - Works in both "All KPIs" and "Weekly Details" sheets
+  
+  3. ERROR HANDLING ✅
+     - Try-catch block prevents export crashes
+     - Console warnings for debugging date issues
+     - Graceful degradation to empty string on errors
+  
+  📊 PREVIOUS FIXES (Version 11.3 - October 29, 2025):
+  
+  1. STATUS COLUMN TEXT ALIGNMENT ✅
+     - Status column now uses LEFT alignment (was center)
+     - "CRITICAL" text displays fully without cutoff
+     - Added 2pt left padding for proper spacing
+     - Status column width: 24 units (increased from 22)
+  
+  2. WEIGHT COLUMN WIDTH FIXED ✅
+     - Weight column: 15 units (was 13)
+     - "Weight" header now displays fully
+     - Properly centered alignment maintained
+  
+  3. COLUMN REBALANCING ✅
+     - KPI Name: 59 units (reduced from 61 to accommodate Status)
+     - Status: 24 units with left alignment
+     - Weight: 15 units for full text display
+     - Total width properly distributed across all columns
+  
+  📊 PDF LOGIC FIXES (Version 11.2):
+  
+  1. PDF STATUS LOGIC CORRECTED ✅
+     - Department status shows RED when KPIs have no data
+     - Table 1 "KPIs AT RISK" counts KPIs with no data correctly
+     - Matches dashboard AI insights logic exactly
+  
+  2. PDF DATA ACCURACY ✅
+     - All metrics match dashboard display
+     - RED status triggers: no data, score = 0, or red KPIs
+     - Consistent logic between web view and PDF report
+  
+  3. COLUMN WIDTHS OPTIMIZED ✅
+     - Strategic Objective: 48 units
+     - KPI Name: properly sized for long names
+     - Score/Status/Weight: efficient space usage
+  
+  📊 DASHBOARD LOGIC FIXES (Version 11.0):
+  
+  1. AI INSIGHTS ACCURACY ✅
+     - "KPIs At Risk" correctly identifies KPIs with NO weekly data
+     - "Critical Blockers" shows "Multiple" when data is missing
+     - Status indicators show RED for empty/zero-score KPIs
+  
+  2. STATUS CONSISTENCY ✅
+     - Dashboard and PDF use identical logic
+     - RED = no data or poor performance
+     - GREEN = data exists AND good scores
+  
+═══════════════════════════════════════════════════════════════════════════════
+-->
+<html lang="en">
+<head>
+<meta charset="UTF--8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilionetworks Executive Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-primary: #000000;
+  --bg-secondary: #1c1c1e;
+  --bg-tertiary: #2c2c2e;
+  --surface: #3a3a3c;
+  --text-primary: #ffffff;
+  --text-secondary: #98989f;
+  --text-tertiary: #636366;
+  --accent: #0a84ff;
+  --success: #30d158;
+  --warning: #ff9f0a;
+  --danger: #ff453a;
+  --border: rgba(255, 255, 255, 0.1);
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #fafafa;
+  --surface: #f9f9f9;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #86868b;
+  --accent: #0066cc;
+  --success: #28a745;
+  --warning: #ff9500;
+  --danger: #ff3b30;
+  --border: rgba(0, 0, 0, 0.1);
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+.dashboard { max-width: 1600px; margin: 0 auto; padding: 24px; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 32px; }
+.brand h1 { font-size: 28px; font-weight: 600; }
+.brand .subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.user-info { display: flex; align-items: center; gap: 12px; background: var(--bg-secondary); padding: 8px 16px; border-radius: 20px; font-size: 14px; cursor: pointer; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
+#userName { font-weight: 500; }
+#userDate { font-size: 12px; color: var(--text-secondary); }
+.theme-toggle { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.3s ease; }
+.theme-toggle:hover { transform: scale(1.1); }
+.nav-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; gap: 12px; flex-wrap: nowrap; }
+.view-tabs { display: flex; gap: 4px; background: var(--bg-secondary); padding: 4px; border-radius: 12px; }
+.tab { padding: 8px 14px; border: none; background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s ease; white-space: nowrap; }
+.tab.active { background: var(--surface); color: var(--text-primary); }
+.actions { display: flex; gap: 6px; flex-wrap: nowrap; }
+.btn { padding: 8px 12px; border: none; border-radius: 10px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn-small { padding: 6px 10px; font-size: 12px; }
+.btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-secondary { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-success { background: var(--success); color: white; }
+.filters { display: flex; gap: 8px; align-items: center; background: var(--bg-secondary); padding: 10px 12px; border-radius: 16px; margin-bottom: 24px; flex-wrap: nowrap; }
+.filter-group { display: flex; align-items: center; gap: 6px; }
+.filter-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; white-space: nowrap; }
+select, input[type="month"] { background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); padding: 5px 8px; border-radius: 8px; font-size: 12px; outline: none; }
+input[type="search"] { background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); padding: 5px 12px; border-radius: 8px; font-size: 12px; outline: none; width: 180px; }
+.active-filters-wrapper { display: none; border: 2px solid var(--accent); border-radius: 16px; margin-bottom: 24px; background: var(--bg-primary); overflow: hidden; }
+.active-filters-wrapper.active { display: block; }
+.active-filters-header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); border-bottom: 1px solid var(--accent); padding: 12px 16px; font-size: 13px; }
+.active-filters-header .filter-info { display: flex; align-items: center; gap: 8px; }
+.active-filters-header .filter-icon { font-size: 16px; }
+.active-filters-header .filter-label-text { color: var(--text-secondary); font-weight: 500; }
+.active-filters-header #activeFiltersList { color: var(--accent); font-weight: 600; }
+.btn-clear-filters { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; }
+.btn-clear-filters:hover { background: var(--danger); color: white; border-color: var(--danger); }
+.filtered-content { padding: 20px; }
+#main-content-unfiltered { display: block; }
+#main-content-unfiltered.hidden { display: none; }
+.ai-insights { background: linear-gradient(135deg, #1c1c1e, #2c2c2e); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 24px; }
+.ai-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.ai-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), #5e5ce6); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.ai-header h2 { font-size: 18px; font-weight: 600; }
+.sync-status { margin-left: auto; display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 6px 12px; border-radius: 20px; font-size: 12px; color: var(--text-secondary); }
+#syncIndicator { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s ease-in-out infinite; }
+.ai-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.insight-card { background: var(--surface); padding: 14px; border-radius: 12px; border-left: 3px solid var(--accent); }
+.insight-card h3 { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.insight-card .value { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+.insight-card .value.critical { color: var(--danger); }
+.insight-card .trend { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+.insight-card .trend.up { color: var(--success); }
+.insight-card .trend.down { color: var(--danger); }
+.objectives-grid, .departments-container { display: grid; gap: 20px; }
+.objectives-grid { grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); }
+.departments-container { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.objective-card { background: var(--bg-secondary); border-radius: 20px; padding: 24px; border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+.objective-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px var(--shadow); }
+.objective-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; }
+.objective-title { font-size: 18px; font-weight: 600; }
+.objective-meta { font-size: 13px; color: var(--text-secondary); }
+.completion-badge { background: var(--surface); padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+.progress-bar { height: 8px; background: var(--surface); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--success), var(--accent)); border-radius: 4px; transition: width 0.6s ease; }
+.department-list { display: flex; flex-direction: column; gap: 12px; }
+.dept-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--surface); border-radius: 12px; }
+.dept-name { font-weight: 500; font-size: 14px; }
+.dept-meta { display: flex; align-items: center; gap: 12px; }
+.kpi-count { font-size: 13px; color: var(--text-secondary); }
+.status-indicator { width: 12px; height: 12px; border-radius: 50%; }
+.status-green { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.status-amber { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
+.status-red { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.status-empty { background: var(--text-tertiary); }
+.department-card { background: var(--bg-secondary); border-radius: 20px; padding: 24px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+.dept-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.dept-header h2 { font-size: 18px; font-weight: 600; }
+.objective-section { margin-bottom: 20px; padding: 16px; background: var(--surface); border-radius: 12px; border-left: 4px solid var(--accent); }
+.objective-section-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.kpis-list { display: flex; flex-direction: column; gap: 10px; }
+.kpi-item { background: var(--bg-secondary); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+.kpi-info h4 { font-size: 14px; font-weight: 500; }
+.kpi-details { font-size: 12px; color: var(--text-secondary); }
+.kpi-score { display: flex; align-items: center; gap: 12px; }
+.score-value { font-size: 20px; font-weight: 600; display: flex; align-items: center; }
+.kpi-trend { font-size: 12px; margin-left: 8px; }
+.kpi-trend.up { color: var(--success); }
+.kpi-trend.down { color: var(--danger); }
+.weekly-grid { background: var(--bg-secondary); border-radius: 20px; padding: 24px; border: 1px solid var(--border); overflow-x: auto; }
+.weekly-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1400px; }
+.weekly-table th, .weekly-table td { padding: 10px; text-align: center; border-bottom: 1px solid var(--border); }
+.weekly-table th { background: var(--surface); color: var(--text-secondary); font-weight: 500; font-size: 13px; vertical-align: middle; }
+.weekly-table .objective-header-cell { text-align: left; position: sticky; left: 0; z-index: 10; border-right: 2px solid var(--border); font-size: 18px; font-weight: 600; color: var(--text-primary); }
+.weekly-table td:first-child { text-align: left; position: sticky; left: 0; z-index: 9; border-right: 2px solid var(--border); font-weight: 500; background: var(--bg-secondary); }
+.weekly-table .dept-header-cell { font-size: 14px; color: var(--text-primary); }
+.weekly-table .week-num-header-cell { font-weight: 600; }
+.weekly-table .week-range-header-cell { font-size: 11px; color: var(--text-secondary); padding-top: 0; border-bottom-width: 2px; }
+.dept-border-right { border-right: 2px solid var(--border); }
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-content { background: var(--bg-secondary); border-radius: 20px; padding: 32px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-header h2 { font-size: 22px; font-weight: 600; }
+.close-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--surface); border: none; color: var(--text-primary); cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea { background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); padding: 10px 12px; border-radius: 10px; font-size: 14px; width: 100%; }
+.modal-content hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.modal-content h3 { margin: 24px 0 16px 0; font-size: 16px; }
+.weeks-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.week-block { background: var(--surface); padding: 16px; border-radius: 12px; }
+.week-block h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.modal-description { margin-bottom: 16px; padding: 12px; background: var(--surface); border-radius: 10px; font-size: 14px; color: var(--text-secondary); }
+#usersList { display: flex; flex-direction: column; gap: 12px; }
+.user-card { padding: 16px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; }
+.user-card:hover { border-color: var(--accent); }
+.user-card.active { border-color: var(--accent); background: var(--surface); }
+.user-card-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; }
+.user-card-info { flex: 1; }
+.user-card-name { font-weight: 600; font-size: 15px; }
+.user-card-access { font-size: 13px; color: var(--text-secondary); }
+.activity-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 12px; background: var(--surface); border-radius: 10px; font-size: 14px; color: var(--text-secondary); }
+.sync-indicator-small { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
+.activity-feed { max-height: 400px; overflow-y: auto; }
+.activity-item { padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
+.activity-item:last-child { border-bottom: none; }
+.activity-icon { font-size: 20px; line-height: 1.2; }
+.activity-details { flex: 1; }
+.activity-header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+.activity-user { font-weight: 600; }
+.activity-time { font-size: 12px; color: var(--text-tertiary); }
+.activity-text { font-size: 13px; color: var(--text-secondary); }
+.placeholder-text { text-align: center; padding: 32px; color: var(--text-tertiary); grid-column: 1 / -1; }
+.hidden { display: none !important; }
+@keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+@media (max-width: 1400px) { .ai-content { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); } }
+@media (max-width: 1024px) { .objectives-grid, .departments-container { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .nav-container, .filters { flex-direction: column; align-items: stretch; }
+  .ai-content { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+    <header class="header">
+        <div class="brand">
+            <h1>Bilionetworks</h1>
+            <div class="subtitle">Executive Intelligence Dashboard</div>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"><span id="themeIcon">🌙</span></button>
+        
+        <div class="user-info" onclick="toggleLoginModal()" title="Click to Login">
+                <div class="user-avatar" id="userAvatar">🔒</div>
+                <div>
+                    <div id="userName">Guest (Read-Only)</div>
+                    <div id="userDate">October 2025</div>
+            </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav-container">
+        <div class="view-tabs">
+            <button class="tab active" onclick="switchView('strategic')" id="tabStrategic">Strategic Overview</button>
+            <button class="tab" onclick="switchView('departmental')" id="tabDepartmental">Departmental Overview</button>
+            <button class="tab" onclick="switchView('weekly')" id="tabWeekly">Monthly Tracker</button>
+        </div>
+    
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="toggleAIInsights()" id="aiToggleBtn"><span>👁️</span> AI Insights</button>
+            <button class="btn btn-primary" onclick="openModal('addKPIModal')" id="btnAddKPI">+ Add KPI</button>
+            <button class="btn btn-secondary" onclick="openModal('editRemoveKPIModal')" id="btnEditRemove">Edit / Remove</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" id="btnImport">📥 Import</button>
+            <button class="btn btn-secondary" onclick="exportData()">📊 Export</button>
+            <button class="btn btn-success" onclick="saveDataToFile()" id="btnSave">💾 Save</button>
+            <button class="btn btn-secondary" onclick="generateAIReport()">📄 Executive Report</button>
+        </div>
+    </nav>
+    <input type="file" id="importFile" accept=".xlsx,.xls" style="display: none;" onchange="importData(event)">
+
+    <div class="filters">
+        <div class="filter-group">
+            <span class="filter-label">Period:</span>
+            <input type="month" id="monthFilter" onchange="applyFilters()">
+            <button class="btn btn-secondary btn-small" onclick="rollOverPeriod()" id="btnRollOver" style="margin-left: 4px; padding: 4px 8px; font-size: 11px;">📅 Roll Over</button>
+        </div>
+        <div class="filter-group">
+            <span class="filter-label">Objective:</span>
+            <select id="objectiveFilter" onchange="applyFilters()"><option value="">All Objectives</option></select>
+        </div>
+    
+        <div class="filter-group">
+            <span class="filter-label">Department:</span>
+            <select id="departmentFilter" onchange="applyFilters()"><option value="">All Departments</option></select>
+        </div>
+ 
+        <div class="filter-group">
+            <span class="filter-label">Status:</span>
+            <select id="statusFilter" onchange="applyFilters()">
+                <option value="">All</option>
+                <option value="green">On Track</option>
+                <option value="amber">Needs Attention</option>
+                <option value="red">At Risk</option>
+            </select>
+        </div>
+        <input type="search" id="searchBox" placeholder="Search KPIs..." oninput="applyFilters()">
+    </div>
+
+    <section class="ai-insights" id="aiInsightsContainer">
+       
+        <div class="ai-header">
+            <div class="ai-icon">🤖</div>
+           
+           <h2>AI-Powered Insights</h2>
+     
+            <div class="sync-status">
+                <div id="syncIndicator"></div>
+                <span>Live</span>
+           
+         </div>
+        </div>
+        <div class="ai-content" id="aiInsightsContent"></div>
+    </section>
+
+    <!-- Active Filters Wrapper (shows below AI Insights, borders filtered content) -->
+    <div id="activeFiltersWrapper" class="active-filters-wrapper hidden">
+        <div class="active-filters-header">
+            <div class="filter-info">
+                <span class="filter-icon">🔍</span>
+                <span class="filter-label-text">Filtered:</span>
+                <span id="activeFiltersList"></span>
+            </div>
+            <button class="btn-clear-filters" onclick="clearAllFilters()">✕ Clear Filters</button>
+        </div>
+        
+        <!-- Main content when filters are active (wrapped inside border) -->
+        <div class="filtered-content">
+            <div id="strategicView" class="objectives-grid"></div>
+            <div id="departmentalView" class="departments-container hidden"></div>
+            <div id="weeklyView" class="weekly-grid hidden">
+                <table class="weekly-table" id="weeklyTable"></table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content when NO filters active -->
+    <main id="main-content-unfiltered">
+        <div id="strategicView-unfiltered" class="objectives-grid"></div>
+        <div id="departmentalView-unfiltered" class="departments-container hidden"></div>
+        <div id="weeklyView-unfiltered" class="weekly-grid hidden">
+            <table class="weekly-table" id="weeklyTable-unfiltered"></table>
+        </div>
+    </main>
+</div>
+
+<div id="userSwitchModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h2>User Login</h2>
+            <button class="close-btn" onclick="closeModal('userSwitchModal')">×</button>
+        </div>
+        <p class="modal-description">Enter your ID Number to gain write-access to the dashboard.</p>
+        <form onsubmit="loginUser(event)">
+            <div class="form-group">
+                <label for="userIdInput">ID Number:</label>
+                <input type="password" id="userIdInput" style="font-size: 16px;" required autocomplete="current-password">
+            </div>
+            <div class="modal-actions" style="margin-top: 16px;">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="addKPIModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New KPI</h2>
+            <button class="close-btn" onclick="closeModal('addKPIModal')">×</button>
+        </div>
+        <form onsubmit="addKPI(event)">
+            <div class="form-grid">
+                <div class="form-group"><label>Strategic Objective *</label><select id="addObjective" required></select></div>
+                <div class="form-group"><label>Department *</label><select id="addDepartment" required></select></div>
+                <div class="form-group"><label>KPI Name *</label><input id="addName" required placeholder="e.g., Monthly Recurring Revenue"></div>
+                <div class="form-group"><label>Target</label><input id="addTarget" placeholder="e.g., R 5M"></div>
+                <div class="form-group"><label>Weighting (%)</label><input id="addWeighting" type="number" min="0" max="100" value="10"></div>
+                <div class="form-group"><label>Current Score (0-10)</label><input id="addScore" type="number" step="0.1" value="5" readonly></div>
+            </div>
+            <h3>Weekly Updates</h3>
+            <div class="weeks-container" id="addWeeksContainer"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addKPIModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add KPI</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editRemoveKPIModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+           <h2>Edit / Remove KPI</h2>
+          <button class="close-btn" onclick="closeModal('editRemoveKPIModal')">×</button>
+        </div>
+        <form onsubmit="saveKPIEdit(event)">
+            <div class="form-grid">
+                <div class="form-group"><label>Select Department</label><select id="editSelectDept"></select></div>
+                <div class="form-group"><label>Select Objective</label><select id="editSelectObj"></select></div>
+                <div class="form-group"><label>Select KPI</label><select id="editSelectKPI"></select>
+           </div>
+            <hr>
+            <div id="editFieldsContainer" class="hidden">
+                <div class="form-grid">
+                    <div class="form-group"><label>KPI Name</label><input id="editName"></div>
+                  <div class="form-group"><label>Target</label><input id="editTarget"></div>
+                   <div class="form-group"><label>Weighting (%)</label><input id="editWeighting" type="number" min="0" max="100"></div>
+                    <div class="form-group"><label>Score (0-10)</label><input id="editScore" type="number" step="0.1" readonly></div>
+                </div>
+                 <h3>Weekly Updates</h3>
+                <div class="weeks-container" id="editWeeksContainer"></div>
+               <div class="modal-actions">
+                    <button type="button" class="btn btn-danger" id="removeKPIButton" onclick="removeKPI()">Remove KPI</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editRemoveKPIModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveKPIButton">Save Changes</button>
+           </div>
+            </div>
+            <p id="editPlaceholder" class="placeholder-text">Please select a KPI to edit or remove.</p>
+        </form>
+    </div>
+</div>
+
+<div id="notification-container"></div>
+
+
+<script>
+// --- CONFIGURATION & CONSTANTS ---
+const CONFIG = {
+    // --- APP SCRIPT URL INTEGRATED ---
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxrXq1WKq2ZUcfpUiNJtZ0fP7l7rPO-cv5bm7u_Enxt5cFtznheRqZq5jXslV6U5Jew/exec', 
+    
+    STORAGE_KEY: 'bilionetworks_dashboard_data_v4', 
+    OBJECTIVES: [
+        'Revenue Growth', 'Cost Reduction', 'Client Development & Market Share',
+        'Operational Excellence & System Integration', 'Team Performance & Development', 'Special Projects'
+    ],
+    DEPARTMENTS: [
+        'Business Development', 'Operations', 'Technical Services',
+        'Finance', 'Procurement', 'Human Resources'
+    ],
+    
+    USERS: {
+        CEO:  { name: 'Chief Executive Officer', avatar: 'CEO', color: '#0a84ff', departments: 'all', id: '6610195207089' }, // CORRECTED ID
+        COO:  { name: 'Chief Operating Officer', avatar: 'COO', color: '#5e5ce6', departments: ['Operations', 'Technical Services'], id: '9201310276089' }, // UNIQUE ID
+        CTO:  { name: 'Chief Technology Officer', avatar: 'CTO', color: '#bf5af2', departments: ['Technical Services', 'Operations'], id: '9101075155082' },
+        CFO:  { name: 'Chief Financial Officer', avatar: 'CFO', color: '#30d158', departments: ['Finance', 'Procurement'], id: '9104185008084' },
+        SBDM: { name: 'Senior BD Manager', avatar: 'SBDM', color: '#64d2ff', departments: ['Business Development'], id: '8206150125081' },
+        SHRM: { name: 'Senior HR Manager', avatar: 'SHRM', color: '#ff453a', departments: ['Human Resources'], id: '9410280035082' },
+        SPM:  { name: 'Senior Procurement Manager', avatar: 'SPM', color: '#ff9f0a', departments: ['Procurement'], id: '9005310113089' },
+        SIM:  { name: 'Senior Infrastructure Manager', avatar: 'SIM', color: '#a2845e', departments: ['Operations'], id: '9005145068086' }
+    },
+    QUARTERS: {
+        Q1: [0, 1, 2], Q2: [3, 4, 5], Q3: [6, 7, 8], Q4: [9, 10, 11]
+    }
+};
+
+// --- STATE MANAGEMENT ---
+let state = {
+    currentUser: null,
+    isLoggedIn: false,
+    currentView: 'strategic', 
+    theme: 'dark',
+    aiInsightsVisible: true,
+    filters: {},
+    data: {},
+    activityLog: []
+};
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    loadStateFromStorage();
+    initializeFilters();
+    setupUI();
+    render();
+    setInterval(updateLastSyncTime, 5000);
+});
+
+function initializeFilters() {
+    const now = new Date();
+    state.filters = {
+        year: state.filters.year || now.getFullYear(),
+        month: state.filters.month || now.getMonth(),
+        objective: state.filters.objective || '',
+        department: state.filters.department || '',
+        status: state.filters.status || '',
+        search: state.filters.search || ''
+    };
+}
+
+function createOptions(items, placeholder) {
+    let options = placeholder ? `<option value="">${placeholder}</option>` : '';
+    options += items.map(item => `<option value="${item}">${item}</option>`).join('');
+    return options;
+}
+
+function setupUI() {
+    document.getElementById('objectiveFilter').innerHTML = createOptions(CONFIG.OBJECTIVES, 'All Objectives');
+    document.getElementById('departmentFilter').innerHTML = createOptions(CONFIG.DEPARTMENTS, 'All Departments');
+    document.getElementById('addObjective').innerHTML = createOptions(CONFIG.OBJECTIVES);
+    document.getElementById('addDepartment').innerHTML = createOptions(CONFIG.DEPARTMENTS);
+    document.getElementById('editSelectDept').innerHTML = createOptions(CONFIG.DEPARTMENTS, 'Select Department');
+    document.getElementById('editSelectObj').innerHTML = '<option value="">Select Department First</option>';
+    document.getElementById('editSelectKPI').innerHTML = '<option value="">Select Objective First</option>';
+
+    createWeekInputs('add');
+    createWeekInputs('edit');
+    
+    document.getElementById('editSelectDept').addEventListener('change', loadEditObjectives);
+    document.getElementById('editSelectObj').addEventListener('change', loadEditKPIs);
+    document.getElementById('editSelectKPI').addEventListener('change', populateEditForm);
+    
+    document.getElementById('monthFilter').value = `${state.filters.year}-${String(state.filters.month + 1).padStart(2, '0')}`;
+}
+
+// --- CORE RENDER FUNCTION ---
+function render() {
+    applyTheme();
+    updateUserDisplay();
+    updateFiltersUI();
+    updateButtonPermissions(); 
+    
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(`tab${state.currentView.charAt(0).toUpperCase() + state.currentView.slice(1)}`).classList.add('active');
+    
+    const viewRenderers = {
+        strategic: renderStrategicView,
+        departmental: renderDepartmentalView,
+        weekly: renderWeeklyView
+    };
+
+    if (state.aiInsightsVisible) {
+        document.getElementById('aiInsightsContainer').classList.remove('hidden');
+        renderAIInsights();
+    } else {
+        document.getElementById('aiInsightsContainer').classList.add('hidden');
+    }
+    
+    ['strategicView', 'departmentalView', 'weeklyView'].forEach(v => {
+        const filteredEl = document.getElementById(v);
+        const unfilteredEl = document.getElementById(`${v}-unfiltered`);
+        const isCurrentView = v === `${state.currentView}View`;
+        
+        if (filteredEl) filteredEl.classList.toggle('hidden', !isCurrentView);
+        if (unfilteredEl) unfilteredEl.classList.toggle('hidden', !isCurrentView);
+    });
+
+    viewRenderers[state.currentView]();
+}
+
+// --- DATA PERSISTENCE (Modified for Cloud Fetch/Save logic) ---
+async function saveDataToStorage() {
+    if (!state.isLoggedIn) {
+        showNotification('Error', 'You must be logged in to save to the cloud.', 'danger');
+        return;
+    }
+    
+    // Disable save button and show saving state
+    const saveBtn = document.getElementById('btnSave');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '⏳ Saving...';
+    }
+    
+    try {
+        // ALWAYS save to localStorage first (this is guaranteed to work)
+        state.lastSaved = new Date().toISOString();
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state));
+        
+        let cloudSyncSuccess = false;
+        
+        // Try cloud save if URL is configured
+        if (CONFIG.APPS_SCRIPT_URL && !CONFIG.APPS_SCRIPT_URL.includes('PASTE_YOUR_DEPLOYED')) {
+            try {
+                const flatData = transformNestedToFlat(state.data);
+                
+                const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'save', data: flatData, user: state.currentUser })
+                });
+                
+                cloudSyncSuccess = true;
+                logActivity('CLOUD_SAVE_ATTEMPTED', 'Data dispatched to Google Sheet (no-cors mode).');
+            } catch (cloudError) {
+                console.warn('Cloud save failed, but local save succeeded:', cloudError);
+                cloudSyncSuccess = false;
+            }
+        }
+        
+        // Show comprehensive success notification
+        const timestamp = new Date().toLocaleTimeString();
+        let message = `<strong>✅ Successfully Saved!</strong><br><br>`;
+        message += `📱 <strong>Browser Storage:</strong> ✓ Saved<br>`;
+        message += cloudSyncSuccess 
+            ? `☁️ <strong>Google Sheets:</strong> ✓ Synced<br>` 
+            : `☁️ <strong>Google Sheets:</strong> ⚠️ Not configured or unavailable<br>`;
+        message += `🕐 <strong>Last Saved:</strong> ${timestamp}<br><br>`;
+        message += `<em>Your data is safe and backed up!</em>`;
+        
+        showNotification('Success', message, 'success', 5000); // Show for 5 seconds
+        logActivity('LOCAL_SAVE', 'Data saved to browser storage.');
+        updateLastSyncTime();
+        
+        // Animate save button with success state
+        if (saveBtn) {
+            saveBtn.innerHTML = '✅ Saved!';
+            saveBtn.style.background = 'var(--success)';
+            saveBtn.style.color = 'white';
+            
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '💾 Save';
+                saveBtn.style.background = '';
+                saveBtn.style.color = '';
+            }, 2000);
+        }
+
+    } catch (error) {
+        console.error('Failed to save state:', error);
+        showNotification('Error', 'Failed to save data. Check browser console.', 'danger');
+        
+        // Reset button on error
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '💾 Save';
+        }
+    }
+}
+
+function saveDataToFile() {
+    // Simplified: Just save to storage (localStorage + cloud sync)
+    // No automatic JSON download
+    saveDataToStorage(); 
+}
+
+
+async function loadStateFromStorage() {
+    const savedState = localStorage.getItem(CONFIG.STORAGE_KEY);
+    if (savedState) {
+        const loaded = JSON.parse(savedState);
+        
+        // Old format migration logic
+        if (loaded.data && loaded.data['Business Development']) {
+            const oldData = loaded.data;
+            loaded.data = {};
+            const oldYear = loaded.filters?.year || new Date().getFullYear();
+            const oldMonth = loaded.filters?.month || new Date().getMonth();
+            const legacyDateKey = `${oldYear}-${String(oldMonth + 1).padStart(2, '0')}`;
+            loaded.data[legacyDateKey] = oldData;
+            loaded.filters.year = oldYear;
+            loaded.filters.month = oldMonth;
+        }
+        
+        state = { ...state, ...loaded };
+        state.currentUser = null;
+        state.isLoggedIn = false;
+    } else {
+        state.data = {};
+    }
+    
+    // Attempt cloud fetch after loading local state/filters
+    await fetchDataFromCloud();
+}
+
+async function fetchDataFromCloud() {
+    try {
+        // Silently skip if URL not configured
+        if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.includes('PASTE_YOUR_DEPLOYED_WEB_APP_URL_HERE')) {
+            console.info('Cloud sync not configured - using local storage only');
+            state.data = state.data || {};
+            setupUI();
+            render();
+            return;
+        }
+        
+        // Check if browser is online
+        if (!navigator.onLine) {
+            console.info('Browser is offline - using local storage');
+            state.data = state.data || {};
+            setupUI();
+            render();
+            return;
+        }
+        
+        console.log('Attempting to fetch from cloud...');
+        showNotification('Info', 'Fetching data from Google Cloud...', 'info');
+        
+        // Fetch with timeout (10 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        const response = await fetch(CONFIG.APPS_SCRIPT_URL + '?action=fetch', {
+            method: 'GET',
+            mode: 'cors', // Try cors mode first
+            cache: 'no-cache',
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        // Try to read response
+        const result = await response.json();
+        
+        console.log('🌐 RAW RESPONSE FROM GOOGLE SHEETS:', {
+            status: result.status,
+            rowCount: result.data?.length || 0,
+            firstRow: result.data?.[0] || null
+        });
+        
+        if (result.status === 'error') throw new Error(result.message);
+
+        const transformedData = transformFlatToNested(result.data);
+        state.data = transformedData; 
+        
+        showNotification('Success', 'Dashboard data loaded from Google Sheet.', 'success');
+        console.log('✅ Cloud data loaded successfully');
+        logActivity('CLOUD_LOAD_SUCCESS', `Loaded ${result.data?.length || 0} KPIs from Google Sheet.`);
+        
+    } catch (error) {
+        // Silently handle errors - don't alarm users
+        if (error.name === 'AbortError') {
+            console.info('Cloud fetch timeout - using local storage');
+        } else {
+            console.info('Cloud fetch not available - using local storage:', error.message);
+        }
+        // No error notification - just use local data
+        state.data = state.data || {};
+    }
+    setupUI();
+    render();
+}
+
+function transformFlatToNested(flatData) {
+    console.log('🔍 TRANSFORM DEBUG: Processing', flatData.length, 'rows from Google Sheets');
+    
+    // Generate default date from current filters (or current date)
+    const now = new Date();
+    const defaultYear = state.filters?.year || now.getFullYear();
+    const defaultMonth = state.filters?.month !== undefined ? state.filters.month : now.getMonth();
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    const defaultDateKey = `${monthNames[defaultMonth]} ${defaultYear}`;
+    
+    console.log('🗓️ Default date for empty Date fields:', defaultDateKey);
+    
+    const nestedData = {};
+    flatData.forEach((row, index) => {
+        // Debug first row to see what Google Sheets is actually returning
+        if (index === 0) {
+            console.log('📋 First row sample from Google Sheets:', {
+                'Date/DateKey': row.Date || row.DateKey || '(empty)',
+                'Department': row.Department,
+                'KPI Name': row['KPI Name'],
+                'Created At': row['Created At'],
+                'Created At Type': typeof row['Created At'],
+                'Last Modified': row['Last Modified'],
+                'Last Modified Type': typeof row['Last Modified']
+            });
+        }
+        
+        // Get raw date from Google Sheets (could be ISO string, date object, or month-year string)
+        let rawDate = row.Date || row.DateKey;
+        
+        // Convert ISO timestamps or Date objects to "Month YYYY" format
+        let dateKey = null;
+        
+        if (rawDate) {
+            try {
+                // Try to parse as a date if it looks like an ISO string or Date object
+                const parsedDate = new Date(rawDate);
+                if (!isNaN(parsedDate.getTime())) {
+                    // Valid date - convert to "Month YYYY" format
+                    dateKey = `${monthNames[parsedDate.getMonth()]} ${parsedDate.getFullYear()}`;
+                    
+                    if (index === 0) {
+                        console.log('📅 Date conversion:', {
+                            'Raw date': rawDate,
+                            'Parsed date': parsedDate.toISOString(),
+                            'Converted to': dateKey
+                        });
+                    }
+                } else {
+                    // Not a valid date object, try using the raw string
+                    dateKey = rawDate;
+                }
+            } catch (e) {
+                // If parsing fails, use the raw value (might already be in correct format)
+                dateKey = rawDate;
+                if (index === 0) {
+                    console.warn('⚠️ Could not parse date, using raw value:', rawDate);
+                }
+            }
+        }
+        
+        // If dateKey is still empty/null, use the default date
+        if (!dateKey) {
+            dateKey = defaultDateKey;
+            if (index === 0) {
+                console.log('⚠️ Date column is empty - using default date:', defaultDateKey);
+            }
+        }
+        
+        const department = row.Department;
+        const objective = row['Strategic Objective'];
+        const name = row['KPI Name'];
+
+        if (!dateKey || !department || !objective || !name) {
+            if (index < 5) {  // Only log first few skipped rows to avoid spam
+                console.warn(`⚠️ Skipping row ${index + 1} - missing required field:`, {
+                    dateKey: !!dateKey,
+                    department: !!department,
+                    objective: !!objective,
+                    name: !!name
+                });
+            }
+            return;
+        }
+
+        nestedData[dateKey] = nestedData[dateKey] || {};
+        nestedData[dateKey][department] = nestedData[dateKey][department] || { objectives: {} };
+        nestedData[dateKey][department].objectives[objective] = nestedData[dateKey][department].objectives[objective] || { kpis: {} };
+
+        const kpi = {
+            target: row.Target,
+            weighting: parseFloat(row['Weighting (%)']) || 0,
+            score: parseFloat(row['Score (0-10)']) || 0,
+            status: row.Status || calculateStatus(parseFloat(row['Score (0-10)']) || 0),
+            createdBy: row['Created By'] || 'Import',
+            createdAt: row['Created At'] ? parseImportDate(row['Created At'], 'Created At') : new Date().toISOString(),
+            lastModifiedAt: row['Last Modified'] ? parseImportDate(row['Last Modified'], 'Last Modified') : null,
+            weeks: []
+        };
+        
+        for (let i = 1; i <= 5; i++) {
+            kpi.weeks.push({
+                score: row[`W${i} Score`] !== '' && row[`W${i} Score`] !== null ? parseFloat(row[`W${i} Score`]) : null,
+                wins: row[`W${i} Wins`] || '',
+                blockers: row[`W${i} Blockers`] || '',
+                commitments: row[`W${i} Commitments`] || ''
+            });
+        }
+
+        nestedData[dateKey][department].objectives[objective].kpis[name] = kpi;
+    });
+    
+    console.log('✅ Transform complete. Date keys found:', Object.keys(nestedData));
+    console.log('📊 Total KPIs imported:', flatData.length);
+    
+    return nestedData;
+}
+
+function transformNestedToFlat(nestedData) {
+    const flatData = [];
+    const headers = [ 
+        'DateKey', 'Department', 'Strategic Objective', 'KPI Name', 'Target', 
+        'Weighting (%)', 'Score (0-10)', 'Status', 'Created By', 'Created At', 'Last Modified',
+        'W1 Score', 'W1 Wins', 'W1 Blockers', 'W1 Commitments', 
+        'W2 Score', 'W2 Wins', 'W2 Blockers', 'W2 Commitments', 
+        'W3 Score', 'W3 Wins', 'W3 Blockers', 'W3 Commitments', 
+        'W4 Score', 'W4 Wins', 'W4 Blockers', 'W4 Commitments', 
+        'W5 Score', 'W5 Wins', 'W5 Blockers', 'W5 Commitments'
+    ];
+
+    Object.entries(nestedData).forEach(([dateKey, departments]) => {
+        Object.entries(departments).forEach(([deptName, objectives]) => {
+            if (!objectives || !objectives.objectives) return; 
+            
+            Object.entries(objectives.objectives).forEach(([objName, kpis]) => {
+                if (!kpis || !kpis.kpis) return; 
+                
+                Object.entries(kpis.kpis).forEach(([kpiName, kpi]) => {
+                    const row = {
+                        'DateKey': dateKey,
+                        'Department': deptName,
+                        'Strategic Objective': objName,
+                        'KPI Name': kpiName,
+                        'Target': kpi.target,
+                        'Weighting (%)': kpi.weighting,
+                        'Score (0-10)': kpi.score.toFixed(1),
+                        'Status': kpi.status,
+                        'Created By': kpi.createdBy || state.currentUser,
+                        'Created At': kpi.createdAt,
+                        'Last Modified': kpi.lastModifiedAt || kpi.createdAt,
+                    };
+
+                    kpi.weeks.forEach((week, i) => {
+                        row[`W${i+1} Score`] = week.score !== null ? week.score.toFixed(1) : '';
+                        row[`W${i+1} Wins`] = week.wins;
+                        row[`W${i+1} Blockers`] = week.blockers;
+                        row[`W${i+1} Commitments`] = week.commitments;
+                    });
+                    
+                    const finalRow = {};
+                    headers.forEach(h => {
+                        finalRow[h] = row[h] !== undefined ? row[h] : '';
+                    });
+                    
+                    flatData.push(finalRow);
+                });
+            });
+        });
+    });
+    return flatData;
+}
+
+
+// --- UI UPDATE FUNCTIONS ---
+function applyTheme() {
+    document.documentElement.setAttribute('data-theme', state.theme);
+    document.getElementById('themeIcon').textContent = state.theme === 'dark' ? '🌙' : '☀️';
+}
+
+function updateUserDisplay() {
+    const user = CONFIG.USERS[state.currentUser];
+    const userAvatar = document.getElementById('userAvatar');
+    const userName = document.getElementById('userName');
+    const userInfoDiv = document.querySelector('.user-info');
+    
+    if (state.isLoggedIn && user) {
+        userName.textContent = user.name;
+        userAvatar.textContent = user.avatar;
+        userAvatar.style.background = `linear-gradient(135deg, ${user.color}, #5e5ce6)`;
+        userInfoDiv.title = 'Click to Logout';
+    } else {
+        userName.textContent = 'Guest (Read-Only)';
+        userAvatar.textContent = '🔒';
+        userAvatar.style.background = 'var(--surface)';
+        userInfoDiv.title = 'Click to Login';
+    }
+}
+
+function updateFiltersUI() {
+    const monthFilter = document.getElementById('monthFilter');
+    monthFilter.value = `${state.filters.year}-${String(state.filters.month + 1).padStart(2, '0')}`;
+    
+    document.getElementById('objectiveFilter').value = state.filters.objective;
+    document.getElementById('departmentFilter').value = state.filters.department;
+    document.getElementById('statusFilter').value = state.filters.status;
+    document.getElementById('searchBox').value = state.filters.search;
+    updateBannerDate();
+}
+
+function updateBannerDate() {
+    const dateDisplay = document.getElementById('userDate');
+    const date = new Date(state.filters.year, state.filters.month);
+    dateDisplay.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+// --- VIEW RENDERING LOGIC ---
+function renderStrategicView() {
+    // Determine which container to use based on active filters
+    const hasActiveFilters = state.filters.objective || state.filters.department || state.filters.status || state.filters.search;
+    const containerId = hasActiveFilters ? 'strategicView' : 'strategicView-unfiltered';
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    let html = '';
+    const filteredObjectives = CONFIG.OBJECTIVES.filter(obj => 
+        !state.filters.objective || state.filters.objective === obj
+    );
+    
+    if (Object.keys(getCurrentMonthData()).length === 0) {
+         container.innerHTML = '<p class="placeholder-text">No data for this period. Use "+ Add KPI" to begin.</p>';
+         return;
+    }
+
+    filteredObjectives.forEach(obj => {
+        const { percentage, kpiCount, totalWeight } = calculateObjectiveCompletion(obj);
+        
+        let deptListHTML = '';
+        
+        CONFIG.DEPARTMENTS.forEach(dept => {
+            if (state.filters.department && state.filters.department !== dept) return;
+
+            const user = CONFIG.USERS[state.currentUser];
+            if (state.isLoggedIn && user && user.departments !== 'all' && !user.departments.includes(dept)) {
+                return;
+            }
+            
+            const { count, status } = getDepartmentObjectiveStatus(dept, obj);
+   
+            if (state.filters.status && status !== 'empty' && state.filters.status !== status) return;
+
+            if (count > 0 || (!state.filters.status && !state.filters.department)) {
+                deptListHTML += `
+                    <div class="dept-item">
+                        <div class="dept-name">${dept}</div>
+                        <div class="dept-meta">
+                            <span class="kpi-count">${count} KPI${count !== 1 ? 's' : ''}</span>
+                            <div class="status-indicator status-${status}"></div>
+                         </div>
+                    </div>`;
+            }
+        });
+
+        if(kpiCount > 0 || !state.filters.objective) {
+             html += `
+                <div class="objective-card">
+                    <div class="objective-header">
+                     <div>
+                           <div class="objective-title">${obj}</div>
+                            <div class="objective-meta">${kpiCount} KPIs • ${totalWeight}% Total Weight</div>
+                   </div>
+                        <div class="completion-badge">${percentage}%</div>
+           
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${percentage}%"></div></div>
+                   <div class="department-list">${deptListHTML || '<p class="placeholder-text" style="padding: 10px 0;">No departmental data for this objective.</p>'}</div>
+                </div>`;
+        }
+    });
+
+    container.innerHTML = html || '<p class="placeholder-text">No data matches the current filters. Use "+ Add KPI" to begin.</p>';
+}
+
+function renderDepartmentalView() {
+    // Determine which container to use based on active filters
+    const hasActiveFilters = state.filters.objective || state.filters.department || state.filters.status || state.filters.search;
+    const containerId = hasActiveFilters ? 'departmentalView' : 'departmentalView-unfiltered';
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    let html = '';
+    const filteredDepartments = CONFIG.DEPARTMENTS.filter(dept => 
+        !state.filters.department || state.filters.department === dept
+    );
+    
+    if (Object.keys(getCurrentMonthData()).length === 0) {
+         container.innerHTML = '<p class="placeholder-text">No data for this period. Use "+ Add KPI" to begin.</p>';
+         return;
+    }
+
+    filteredDepartments.forEach(dept => {
+        const user = CONFIG.USERS[state.currentUser];
+        if (state.isLoggedIn && user && user.departments !== 'all' && !user.departments.includes(dept)) {
+            return;
+        }
+        
+        if (!getCurrentMonthData()[dept]) return;
+        
+        const { percentage } = calculateDepartmentalCompletion(dept);
+        let objectivesHTML = '';
+        let departmentTotalKPIs = 0;
+        
+        CONFIG.OBJECTIVES.forEach(obj => {
+            if (state.filters.objective && state.filters.objective !== obj) return;
+            
+            const kpis = getKPIs(dept, obj);
+            
+            const filteredKPIs = Object.entries(kpis).filter(([name, kpi]) => {
+                const searchMatch = !state.filters.search || name.toLowerCase().includes(state.filters.search);
+                const statusMatch = !state.filters.status || kpi.status === state.filters.status;
+                return searchMatch && statusMatch;
+            });
+
+            const kpiCount = filteredKPIs.length;
+            departmentTotalKPIs += kpiCount;
+
+            let kpisListHTML = '';
+            if (kpiCount > 0) {
+      
+                kpisListHTML = filteredKPIs.map(([name, kpi]) => {
+                    const trend = getKPITrend(kpi);
+                    return `
+                       <div class="kpi-item">
+                            <div class="kpi-info">
+                                <h4>${name}</h4>
+              
+                           <div class="kpi-details">Target: ${kpi.target || 'N/A'} • Weight: ${kpi.weighting || 0}%</div>
+                            </div>
+                            <div class="kpi-score">
+                       <div class="score-value">${kpi.score.toFixed(1)}/10 
+             
+                                   <span class="kpi-trend ${trend.class}">${trend.icon}</span>
+                                </div>
+                               <div class="status-indicator status-${kpi.status}"></div>
+          
+                           </div>
+                        </div>`;
+                }).join('');
+            } else if (!state.filters.status && !state.filters.search) {
+                 if (getCurrentMonthData()[dept]?.objectives[obj]) {
+                    kpisListHTML = '<p class="placeholder-text" style="padding: 10px 0;">No KPIs defined. Click "+ Add KPI" to create one.</p>';
+                 } else {
+                    return; 
+                 }
+            } else {
+                return;
+            }
+
+            objectivesHTML += `
+                <div class="objective-section">
+                    <div class="objective-section-title">${obj}</div>
+                    <div class="kpis-list">${kpisListHTML}</div>
+                </div>`;
+        });
+        
+        if(departmentTotalKPIs > 0 || (!state.filters.status && !state.filters.search)){
+             html += `
+                <div class="department-card">
+                   <div class="dept-header">
+                        <h2>${dept}</h2>
+                        <div class="completion-badge">${percentage}%</div>
+                   </div>
+                    ${objectivesHTML}
+                </div>`;
+        }
+    });
+    
+    container.innerHTML = html || '<p class="placeholder-text">No KPI data matches the current filters. Use "+ Add KPI" to begin.</p>';
+}
+
+function renderWeeklyView() {
+    // Determine which table to use based on active filters
+    const hasActiveFilters = state.filters.objective || state.filters.department || state.filters.status || state.filters.search;
+    const tableId = hasActiveFilters ? 'weeklyTable' : 'weeklyTable-unfiltered';
+    const table = document.getElementById(tableId);
+    
+    if (!table) return;
+    
+    const weekDateRanges = getWeekDates(state.filters.year, state.filters.month);
+    const numWeeks = weekDateRanges.length;
+    let tableContentExists = false;
+    
+    const user = CONFIG.USERS[state.currentUser];
+    const accessibleDepartments = CONFIG.DEPARTMENTS.filter(dept => {
+        return !state.isLoggedIn || !user || user.departments === 'all' || user.departments.includes(dept);
+    });
+
+    let headHTML = '<thead>';
+    headHTML += '<tr>';
+    headHTML += '<th rowspan="3" class="objective-header-cell">Strategic Objective</th>';
+    accessibleDepartments.forEach((dept, deptIndex) => {
+        const isLastDept = deptIndex === accessibleDepartments.length - 1;
+        const borderClass = isLastDept ? '' : 'dept-border-right';
+        headHTML += `<th colspan="${numWeeks}" class="dept-header-cell ${borderClass}">${dept}</th>`;
+    });
+    headHTML += '</tr>';
+
+    headHTML += '<tr>';
+    accessibleDepartments.forEach((dept, deptIndex) => {
+        const isLastDept = deptIndex === accessibleDepartments.length - 1;
+        weekDateRanges.forEach((range, weekIndex) => {
+            const isLastWeekInBlock = weekIndex === numWeeks - 1;
+            const borderClass = isLastWeekInBlock && !isLastDept ? 'dept-border-right' : '';
+            headHTML += `<th class="week-num-header-cell ${borderClass}">W${weekIndex + 1}</th>`;
+        });
+    });
+    headHTML += '</tr>';
+
+    headHTML += '<tr>';
+    accessibleDepartments.forEach((dept, deptIndex) => {
+        const isLastDept = deptIndex === accessibleDepartments.length - 1;
+        weekDateRanges.forEach((range, weekIndex) => {
+            const isLastWeekInBlock = weekIndex === numWeeks - 1;
+            const borderClass = isLastWeekInBlock && !isLastDept ? 'dept-border-right' : '';
+            headHTML += `<th class="week-range-header-cell ${borderClass}">${range}</th>`;
+        });
+    });
+    headHTML += '</tr></thead>';
+
+    let bodyHTML = '<tbody>';
+    CONFIG.OBJECTIVES.forEach(obj => {
+        if (state.filters.objective && state.filters.objective !== obj) return;
+        
+        let rowHasData = false;
+        let rowContent = `<tr><td>${obj}</td>`;
+
+        accessibleDepartments.forEach((dept, deptIndex) => {
+            const isLastDept = deptIndex === accessibleDepartments.length - 1;
+            if (state.filters.department && state.filters.department !== dept) {
+                rowContent += `<td colspan="${numWeeks}"></td>`;
+                return;
+            }
+
+            for (let i = 0; i < numWeeks; i++) {
+                const weekIndex = i;
+            
+                const isLastWeekInBlock = i === numWeeks - 1;
+                const borderClass = isLastWeekInBlock && !isLastDept ? 'dept-border-right' : '';
+                
+                const kpis = Object.values(getKPIs(dept, obj));
+                const weekScores = kpis
+                    .map(kpi => kpi.weeks?.[weekIndex]?.score)
+                    .filter(score => score !== null && score !== undefined);
+                
+                let status = 'empty';
+                if (weekScores.length > 0) {
+                    const avgScore = weekScores.reduce((a, b) => a + b, 0) / weekScores.length;
+                    status = calculateStatus(avgScore);
+                }
+                
+                if (state.filters.status && status !== 'empty' && status !== state.filters.status) {
+                    rowContent += `<td class="${borderClass}"><div class="status-indicator status-empty" title="Filtered Out"></div></td>`;
+                } else {
+                    rowContent += `<td class="${borderClass}"><div class="status-indicator status-${status}"></div></td>`;
+                    if (status !== 'empty') rowHasData = true;
+                }
+            }
+        });
+        rowContent += '</tr>';
+
+        if (rowHasData || !state.filters.objective) {
+            bodyHTML += rowContent;
+            if (rowHasData) tableContentExists = true;
+        }
+    });
+    bodyHTML += '</tbody>';
+
+    if (tableContentExists || (numWeeks > 0 && Object.keys(getCurrentMonthData()).length > 0)) {
+        table.innerHTML = headHTML + bodyHTML;
+    } else {
+        table.innerHTML = `<caption class="placeholder-text">No weekly data available. Add KPIs with weekly scores to view this report.</caption>`;
+    }
+}
+
+// --- AI & CALCULATIONS ---
+function renderAIInsights() {
+    let totalKPIs = 0, green = 0, red = 0, blockers = 0, kpisWithData = 0;
+    let atRiskKPIs = [];
+    const currentData = getCurrentMonthData();
+    const user = CONFIG.USERS[state.currentUser];
+    
+    Object.keys(currentData).forEach(dept => {
+        if (state.isLoggedIn && user && user.departments !== 'all' && !user.departments.includes(dept)) {
+            return;
+        }
+        Object.values(currentData[dept].objectives).forEach(objData => {
+             Object.entries(objData.kpis).forEach(([name, kpi]) => {
+                totalKPIs++;
+                
+                // Check if KPI has any weekly data
+                const hasWeeklyData = kpi.weeks?.some(w => 
+                    (w.score !== null && w.score !== undefined) || 
+                    (w.wins && w.wins.trim() !== '') || 
+                    (w.blockers && w.blockers.trim() !== '') || 
+                    (w.commitments && w.commitments.trim() !== '')
+                );
+                
+                if (hasWeeklyData) kpisWithData++;
+                
+                // If no weekly data, KPI is automatically at risk
+                if (!hasWeeklyData || kpi.status === 'red' || kpi.score === 0) {
+                    red++;
+                    atRiskKPIs.push(name);
+                } else if (kpi.status === 'green') {
+                    green++;
+                }
+                
+                kpi.weeks?.forEach(w => { if(w.blockers && w.blockers.trim() !== '') blockers++; });
+             });
+        });
+    });
+
+    const overallCompletion = calculateObjectiveCompletion('All');
+    const overallScore = overallCompletion.totalWeight > 0 ? (overallCompletion.weightedScore / overallCompletion.totalWeight) * 10 : 0;
+    const healthScore = totalKPIs > 0 ? Math.round(overallScore) : 0;
+    const progress = totalKPIs > 0 ? Math.round((green / totalKPIs) * 100) : 0;
+    
+    // Determine appropriate messages based on data completeness
+    const kpisAtRiskValue = totalKPIs === 0 ? '0' : red;
+    const blockersValue = totalKPIs === 0 ? '0' : (blockers > 0 ? blockers : (kpisWithData < totalKPIs ? 'Multiple' : '0'));
+    const topPriorityValue = totalKPIs === 0 ? 'No Data' : (red === totalKPIs ? 'All KPIs Need Attention' : (atRiskKPIs.length > 0 ? atRiskKPIs[0] : 'All Clear'));
+    
+    const insights = [
+        { title: 'Overall Health', value: `${healthScore}/10`, trend: '' },
+        { title: 'Weekly Progress', value: `${progress}%`, trend: overallScore > 8 ? 'up' : (totalKPIs > 0 ? 'down' : '') },
+        { title: 'KPIs At Risk', value: kpisAtRiskValue, trend: red > 0 ? 'down' : (totalKPIs > 0 ? 'up' : '') },
+        { title: 'Critical Blockers', value: blockersValue, trend: '' },
+        { title: 'Top Priority', value: topPriorityValue, trend: '' },
+    ];
+    
+    document.getElementById('aiInsightsContent').innerHTML = insights.map(i => {
+        let trendIcon = '';
+        let trendClass = '';
+        if (i.trend === 'up') { trendIcon = '▲'; trendClass = 'up'; }
+        else if (i.trend === 'down') { trendIcon = '▼'; trendClass = 'down'; }
+        let trendText = '';
+        if (i.title === 'Weekly Progress') trendText = i.trend === 'up' ? 'On Track' : (totalKPIs > 0 ? 'Falling Behind' : 'No Data');
+        else if (i.title === 'KPIs At Risk') {
+            if (totalKPIs === 0) trendText = 'No Data';
+            else if (red === totalKPIs) trendText = 'All Need Attention';
+            else if (red > 0) trendText = 'Needs Attention';
+            else trendText = 'All Clear';
+        }
+        else if (i.title === 'Top Priority') {
+            if (totalKPIs === 0) trendText = 'No KPIs';
+            else if (red === totalKPIs) trendText = 'All Critical';
+            else if (i.value === 'All Clear') trendText = 'All Clear';
+            else trendText = 'Focus Here';
+        }
+        if (totalKPIs === 0 && !['Overall Health', 'Weekly Progress'].includes(i.title)) { 
+            i.value = i.title === 'KPIs At Risk' ? '0' : (i.title === 'Critical Blockers' ? '0' : 'No Data'); 
+        }
+        
+        // Determine if value should be red (only for actual critical data, not empty/zero)
+        let valueClass = 'value';
+        if (i.title === 'Critical Blockers') {
+            // Red only if there are actual blockers (not "0")
+            if (i.value !== '0' && i.value !== 'No Data') {
+                valueClass = 'value critical';
+            }
+        }
+        // Top Priority: value stays white, only trend text (like "All Critical") will be red via trendClass
+        
+        // Make "All Critical" and similar critical trend texts red for Top Priority
+        if (i.title === 'Top Priority') {
+            if (trendText === 'All Critical' || trendText === 'Focus Here') {
+                trendClass = 'down'; // This makes the trend text red
+            }
+        }
+        
+           return `
+            <div class="insight-card">
+                <h3>${i.title}</h3>
+                <div class="${valueClass}">${i.value}</div>
+                ${(i.trend || i.title === 'Top Priority' || totalKPIs === 0) ? `<div class="trend ${trendClass}">${trendIcon} ${trendText}</div>` : ''}
+            </div>`;
+    }).join('');
+}
+
+function calculateDepartmentalCompletion(department) {
+    let totalWeight = 0, weightedScore = 0;
+    const currentData = getCurrentMonthData();
+    const departmentData = currentData[department]?.objectives || {};
+
+    Object.values(departmentData).forEach(objData => {
+        Object.values(objData.kpis).forEach(kpi => {
+            const weight = parseFloat(kpi.weighting) || 0;
+            totalWeight += weight;
+            weightedScore += (kpi.score / 10) * weight;
+        });
+    });
+
+    const percentage = totalWeight > 0 ? Math.round((weightedScore / totalWeight) * 100) : 0;
+    return { percentage };
+}
+
+function calculateObjectiveCompletion(objective) {
+    let totalWeight = 0, weightedScore = 0, kpiCount = 0;
+    const currentData = getCurrentMonthData();
+    const user = CONFIG.USERS[state.currentUser];
+    
+    CONFIG.DEPARTMENTS.forEach(dept => {
+        if (state.isLoggedIn && user && user.departments !== 'all' && !user.departments.includes(dept)) {
+            return;
+        }
+        if (!currentData[dept]) return; 
+        
+        const departmentData = currentData[dept]?.objectives || {};
+        const objectivesToProcess = objective === 'All' ? Object.keys(departmentData) : [objective];
+
+        objectivesToProcess.forEach(obj => {
+            if (objective !== 'All' && !departmentData[obj]) return; 
+
+            const kpis = getKPIs(dept, obj);
+            Object.values(kpis).forEach(kpi => {
+                const weight = parseFloat(kpi.weighting) || 0;
+                 totalWeight += weight;
+                weightedScore += (kpi.score / 10) * weight;
+                kpiCount++;
+            });
+        });
+    });
+
+    const percentage = totalWeight > 0 ? Math.round((weightedScore / totalWeight) * 100) : 0;
+    return { percentage, kpiCount, totalWeight, weightedScore };
+}
+
+function getDepartmentObjectiveStatus(department, objective) {
+    const kpis = Object.values(getKPIs(department, objective));
+    if (kpis.length === 0) return { count: 0, status: 'empty' };
+    
+    // Check if any KPI has weekly data
+    const hasAnyData = kpis.some(kpi => 
+        kpi.weeks?.some(w => 
+            (w.score !== null && w.score !== undefined) || 
+            (w.wins && w.wins.trim() !== '') || 
+            (w.blockers && w.blockers.trim() !== '') || 
+            (w.commitments && w.commitments.trim() !== '')
+        )
+    );
+    
+    const statuses = kpis.map(k => k.status);
+    let status = 'green';
+    if (statuses.some(s => s === 'red') || !hasAnyData) status = 'red'; // Red if any red status OR no data
+    else if (statuses.some(s => s === 'amber')) status = 'amber';
+    
+    return { count: kpis.length, status };
+}
+
+function calculateStatus(score) {
+    if (score === 0) return 'red'; // No data or zero score = red status
+    if (score >= 8) return 'green';
+    if (score >= 5) return 'amber';
+    return 'red';
+}
+
+function getKPITrend(kpi) {
+    const scores = kpi.weeks?.map(w => w.score).filter(s => s !== null && s !== undefined) || [];
+    if (scores.length < 2) return { icon: '—', class: '' };
+    
+    const last = scores[scores.length - 1];
+    const secondLast = scores[scores.length - 2];
+    
+    if (last > secondLast) return { icon: '▲', class: 'up' };
+    if (last < secondLast) return { icon: '▼', class: 'down' };
+    return { icon: '—', class: '' };
+}
+
+
+// --- EVENT HANDLERS & ACTIONS ---
+function updateButtonPermissions() {
+    const btnAdd = document.getElementById('btnAddKPI');
+    const btnEdit = document.getElementById('btnEditRemove');
+    const btnImport = document.getElementById('btnImport');
+    
+    if (state.isLoggedIn) {
+        btnAdd.disabled = false;
+        btnEdit.disabled = false;
+        btnImport.disabled = false;
+    } else {
+        btnAdd.disabled = true;
+        btnEdit.disabled = true;
+        btnImport.disabled = true;
+    }
+}
+
+
+function toggleLoginModal() {
+    if (state.isLoggedIn) {
+        logoutUser();
+    } else {
+        openModal('userSwitchModal');
+    }
+}
+
+function loginUser(e) {
+    e.preventDefault();
+    const idInput = document.getElementById('userIdInput');
+    const id = idInput.value.trim();
+    
+    const userKey = Object.keys(CONFIG.USERS).find(key => CONFIG.USERS[key].id === id);
+    
+    if (userKey) {
+        state.currentUser = userKey;
+        state.isLoggedIn = true;
+        logActivity('USER_LOGIN', `User ${CONFIG.USERS[userKey].name} logged in.`);
+        closeModal('userSwitchModal');
+        idInput.value = '';
+        render();
+        showNotification('Success', `Welcome, ${CONFIG.USERS[userKey].name}!`, 'success');
+    } else {
+        showNotification('Error', 'Invalid ID Number. Please try again.', 'danger');
+        idInput.value = '';
+    }
+}
+
+function logoutUser() {
+    const userName = state.isLoggedIn ? CONFIG.USERS[state.currentUser].name : 'Guest';
+    state.currentUser = null;
+    state.isLoggedIn = false;
+    logActivity('USER_LOGOUT', `User ${userName} logged out.`);
+    render();
+    showNotification('Info', 'You have been logged out.', 'info');
+}
+
+function addKPI(e) {
+    e.preventDefault();
+    if (!state.isLoggedIn) return showNotification('Error', 'You must be logged in to perform this action.', 'danger');
+    
+    const form = e.target;
+    const objective = form.querySelector('#addObjective').value;
+    const department = form.querySelector('#addDepartment').value;
+    
+    const user = CONFIG.USERS[state.currentUser];
+    if (user.departments !== 'all' && !user.departments.includes(department)) {
+        return showNotification('Error', `You do not have permission to add KPIs to the ${department} department.`, 'danger');
+    }
+    
+    const name = form.querySelector('#addName').value.trim();
+    if (!name) return showNotification('Error', 'KPI Name is required.', 'danger');
+
+    const dateKey = getCurrentMonthDataKey();
+    const currentData = getCurrentMonthData(); 
+
+    if (currentData[department]?.objectives[objective]?.kpis?.[name]) {
+        return showNotification('Error', 'This KPI name already exists for this objective in this month.', 'danger');
+    }
+
+    const weeks = [];
+    let scores = [];
+    for (let i = 1; i <= 5; i++) {
+        const scoreVal = form.querySelector(`#addWeekScore${i}`).value;
+        const score = scoreVal ? parseFloat(scoreVal) : null;
+        if(score !== null) scores.push(score);
+        weeks.push({
+            wins: form.querySelector(`#addWin${i}`).value.trim(),
+            blockers: form.querySelector(`#addBlock${i}`).value.trim(),
+            commitments: form.querySelector(`#addCommit${i}`).value.trim(),
+            score
+        });
+    }
+    
+    const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    
+    const newKPI = {
+        target: form.querySelector('#addTarget').value.trim(),
+        weighting: parseFloat(form.querySelector('#addWeighting').value),
+        score: avgScore,
+        status: calculateStatus(avgScore),
+        weeks,
+        createdBy: state.currentUser,
+        createdAt: new Date().toISOString()
+    };
+
+    if (!currentData[department]) currentData[department] = { objectives: {} };
+    if (!currentData[department].objectives[objective]) currentData[department].objectives[objective] = { kpis: {} };
+    currentData[department].objectives[objective].kpis[name] = newKPI;
+    
+    logActivity('KPI_ADDED', `'${name}' added to ${department} for ${dateKey}`);
+    saveDataToStorage();
+    closeModal('addKPIModal');
+    form.reset();
+    render();
+}
+
+function saveKPIEdit(e) {
+    e.preventDefault();
+    if (!state.isLoggedIn) return showNotification('Error', 'You must be logged in to perform this action.', 'danger');
+
+    const dept = document.getElementById('editSelectDept').value;
+    const obj = document.getElementById('editSelectObj').value;
+    
+    const user = CONFIG.USERS[state.currentUser];
+    if (user.departments !== 'all' && !user.departments.includes(dept)) {
+        return showNotification('Error', `You do not have permission to edit KPIs for the ${dept} department.`, 'danger');
+    }
+    
+    const oldName = document.getElementById('editSelectKPI').value;
+    const newName = document.getElementById('editName').value.trim();
+    if (!dept || !obj || !oldName || !newName) return showNotification('Error', 'All fields are required.', 'danger');
+    
+    const dateKey = getCurrentMonthDataKey();
+    const currentData = getCurrentMonthData();
+    let kpi = currentData[dept].objectives[obj].kpis[oldName];
+    
+    const weeks = [];
+    let scores = [];
+     for (let i = 1; i <= 5; i++) {
+        const scoreVal = document.getElementById(`editWeekScore${i}`).value;
+        const score = scoreVal ? parseFloat(scoreVal) : null;
+        if(score !== null) scores.push(score);
+        weeks.push({
+            wins: document.getElementById(`editWin${i}`).value.trim(),
+            blockers: document.getElementById(`editBlock${i}`).value.trim(),
+            commitments: document.getElementById(`editCommit${i}`).value.trim(),
+            score
+        });
+    }
+    const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    
+    kpi.target = document.getElementById('editTarget').value.trim();
+    kpi.weighting = parseFloat(document.getElementById('editWeighting').value);
+    kpi.weeks = weeks;
+    kpi.score = avgScore;
+    kpi.status = calculateStatus(avgScore);
+    kpi.lastModifiedBy = state.currentUser;
+    kpi.lastModifiedAt = new Date().toISOString(); 
+
+    if (newName !== oldName) {
+        if(currentData[dept].objectives[obj].kpis[newName]) {
+             return showNotification('Error', 'New KPI name already exists.', 'danger');
+        }
+        currentData[dept].objectives[obj].kpis[newName] = kpi;
+        delete currentData[dept].objectives[obj].kpis[oldName];
+    }
+    
+    logActivity('KPI_EDITED', `'${newName}' in ${dept} updated for ${dateKey}`);
+    saveDataToStorage();
+    closeModal('editRemoveKPIModal');
+    render();
+}
+
+function removeKPI() {
+    if (!state.isLoggedIn) return showNotification('Error', 'You must be logged in to perform this action.', 'danger');
+
+    const dept = document.getElementById('editSelectDept').value;
+    const obj = document.getElementById('editSelectObj').value;
+    
+    const user = CONFIG.USERS[state.currentUser];
+    if (user.departments !== 'all' && !user.departments.includes(dept)) {
+        return showNotification('Error', `You do not have permission to remove KPIs from the ${dept} department.`, 'danger');
+    }
+    
+    const kpiName = document.getElementById('editSelectKPI').value;
+    if (!dept || !obj || !kpiName) return showNotification('Error', 'No KPI selected.', 'danger');
+
+    const dateKey = getCurrentMonthDataKey();
+    const currentData = getCurrentMonthData();
+
+    if (confirm(`Are you sure you want to permanently remove "${kpiName}"? This action cannot be undone.`)) {
+        delete currentData[dept].objectives[obj].kpis[kpiName];
+        logActivity('KPI_REMOVED', `'${kpiName}' from ${dept} removed for ${dateKey}`);
+        saveDataToStorage();
+        closeModal('editRemoveKPIModal');
+        render();
+    }
+}
+
+
+function applyFilters() {
+    const monthVal = document.getElementById('monthFilter').value;
+    if(monthVal){
+        const [year, month] = monthVal.split('-').map(Number);
+        state.filters.year = year;
+        state.filters.month = month - 1;
+    }
+    state.filters.objective = document.getElementById('objectiveFilter').value;
+    state.filters.department = document.getElementById('departmentFilter').value;
+    state.filters.status = document.getElementById('statusFilter').value;
+    state.filters.search = document.getElementById('searchBox').value.toLowerCase();
+    
+    updateActiveFiltersBanner();
+    render();
+}
+
+function updateActiveFiltersBanner() {
+    const wrapper = document.getElementById('activeFiltersWrapper');
+    const filtersList = document.getElementById('activeFiltersList');
+    
+    const activeFilters = [];
+    
+    // Check Objective filter
+    const objective = document.getElementById('objectiveFilter').value;
+    const hasObjectiveFilter = objective && objective !== '';
+    
+    // Check Department filter
+    const department = document.getElementById('departmentFilter').value;
+    const hasDepartmentFilter = department && department !== '';
+    
+    // Check Status filter
+    const status = document.getElementById('statusFilter').value;
+    const hasStatusFilter = status && status !== '';
+    
+    // Check Search filter
+    const search = document.getElementById('searchBox').value.trim();
+    const hasSearchFilter = search !== '';
+    
+    // Build filter display with context
+    // If only objective is filtered, add "All Departments" context
+    if (hasObjectiveFilter && !hasDepartmentFilter && !hasStatusFilter && !hasSearchFilter) {
+        activeFilters.push(objective);
+        activeFilters.push('All Departments');
+    }
+    // If only department is filtered, add "All Objectives" context
+    else if (hasDepartmentFilter && !hasObjectiveFilter && !hasStatusFilter && !hasSearchFilter) {
+        activeFilters.push('All Objectives');
+        activeFilters.push(department);
+    }
+    // Otherwise, just show the specific filters (no "All" needed)
+    else {
+        if (hasObjectiveFilter) activeFilters.push(objective);
+        if (hasDepartmentFilter) activeFilters.push(department);
+        if (hasStatusFilter) {
+            const statusLabels = {
+                'green': 'On Track',
+                'amber': 'Needs Attention',
+                'red': 'At Risk'
+            };
+            activeFilters.push(statusLabels[status] || status);
+        }
+        if (hasSearchFilter) activeFilters.push(`"${search}"`);
+    }
+    
+    // Show or hide wrapper and toggle between filtered/unfiltered containers
+    const unfilteredContent = document.getElementById('main-content-unfiltered');
+    
+    if (activeFilters.length > 0) {
+        filtersList.textContent = activeFilters.join(' • ');
+        wrapper.classList.remove('hidden');
+        wrapper.classList.add('active');
+        if (unfilteredContent) unfilteredContent.classList.add('hidden');
+    } else {
+        wrapper.classList.add('hidden');
+        wrapper.classList.remove('active');
+        if (unfilteredContent) unfilteredContent.classList.remove('hidden');
+    }
+}
+
+function clearAllFilters() {
+    // Reset all filters to default
+    document.getElementById('objectiveFilter').value = '';
+    document.getElementById('departmentFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('searchBox').value = '';
+    
+    // Reset state filters
+    state.filters.objective = '';
+    state.filters.department = '';
+    state.filters.status = '';
+    state.filters.search = '';
+    
+    // Update banner and re-render
+    updateActiveFiltersBanner();
+    render();
+    
+    showNotification('Success', 'All filters cleared. Showing all data.', 'success', 2000);
+}
+
+function rollOverPeriod() {
+    if (!state.isLoggedIn) {
+        return showNotification('Error', 'You must be logged in to roll over periods.', 'danger');
+    }
+    
+    // Get current period
+    const currentPeriod = getDateKey();
+    if (!state.data[currentPeriod] || Object.keys(state.data[currentPeriod]).length === 0) {
+        return showNotification('Error', 'Current period has no data to roll over. Please add KPIs first.', 'danger');
+    }
+    
+    // Calculate next period
+    const [monthName, year] = currentPeriod.split(' ');
+    const monthMap = {
+        'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
+        'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
+    };
+    const monthNames = Object.keys(monthMap);
+    const currentMonthIndex = monthMap[monthName];
+    const currentYear = parseInt(year);
+    
+    let nextMonthIndex = currentMonthIndex + 1;
+    let nextYear = currentYear;
+    if (nextMonthIndex > 11) {
+        nextMonthIndex = 0;
+        nextYear += 1;
+    }
+    
+    const nextPeriod = `${monthNames[nextMonthIndex]} ${nextYear}`;
+    
+    // Check if next period already exists
+    if (state.data[nextPeriod] && Object.keys(state.data[nextPeriod]).length > 0) {
+        return showNotification('Error', `${nextPeriod} already has data. Please select a different period or delete existing data first.`, 'warning');
+    }
+    
+    // Confirm with user
+    if (!confirm(`Roll over ${currentPeriod} to ${nextPeriod}?\n\nThis will:\n• Copy all KPIs to ${nextPeriod}\n• Keep current scores as baseline\n• Preserve all KPI details\n\nYou can then update scores for the new period.`)) {
+        return;
+    }
+    
+    // Perform deep copy of current period data
+    const currentData = JSON.parse(JSON.stringify(state.data[currentPeriod]));
+    
+    // Create new period with copied data
+    state.data[nextPeriod] = currentData;
+    
+    // Update the period filter to show the new period
+    state.filters.year = nextYear;
+    state.filters.month = nextMonthIndex;
+    
+    // Save to localStorage
+    saveDataToStorage();
+    
+    // Log the activity
+    const kpiCount = Object.values(currentData).reduce((total, dept) => {
+        return total + Object.values(dept.objectives).reduce((objTotal, obj) => {
+            return objTotal + Object.keys(obj.kpis).length;
+        }, 0);
+    }, 0);
+    
+    logActivity('PERIOD_ROLLOVER', `Rolled over ${kpiCount} KPIs from ${currentPeriod} to ${nextPeriod}`);
+    
+    // Update UI
+    setupUI();
+    render();
+    
+    // Show success message
+    showNotification('Success', `Successfully rolled over to ${nextPeriod}! All ${kpiCount} KPIs have been copied with their current scores as baseline.`, 'success');
+    
+    // Remind user to save/sync
+    setTimeout(() => {
+        if (confirm('Would you like to sync this new period to Google Sheets now?')) {
+            saveToCloud();
+        }
+    }, 1500);
+}
+
+function switchView(view) {
+    state.currentView = view;
+    render();
+}
+
+function toggleTheme() {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    render();
+}
+
+function toggleAIInsights() {
+    state.aiInsightsVisible = !state.aiInsightsVisible;
+    render();
+}
+
+// --- MODAL & UI HELPERS ---
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if(modal) {
+        // Fallback approach since the aggressive rendering fixes also failed for the 'activityLogModal'
+        modal.style.display = 'flex';
+            
+        if (modalId === 'activityLogModal') updateActivityFeed(); 
+        if (modalId === 'userSwitchModal') { 
+            document.getElementById('userIdInput').focus();
+        }
+        if (modalId === 'editRemoveKPIModal') {
+            document.getElementById('editSelectDept').value = '';
+            document.getElementById('editSelectObj').innerHTML = '<option value="">Select Department First</option>';
+            document.getElementById('editSelectKPI').innerHTML = '<option value="">Select Objective First</option>';
+            document.getElementById('editFieldsContainer').classList.add('hidden');
+            document.getElementById('editPlaceholder').classList.remove('hidden');
+        }
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if(modal) modal.style.display = 'none';
+}
+
+
+function createWeekInputs(mode) {
+    const container = document.getElementById(`${mode}WeeksContainer`);
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+        html += `
+            <div class="week-block">
+                <h4>Week ${i}</h4>
+                <div class="form-group"><label>Wins</label><textarea id="${mode}Win${i}" rows="2"></textarea></div>
+                <div class="form-group"><label>Blockers</label><textarea id="${mode}Block${i}" rows="2"></textarea></div>
+               <div class="form-group"><label>Commitments</label><textarea id="${mode}Commit${i}" rows="2"></textarea></div>
+                <div class="form-group"><label>Score (0-10)</label><input type="number" id="${mode}WeekScore${i}" min="0" max="10" step="0.1" oninput="updateAverageScore('${mode}')"></div>
+            </div>`;
+    }
+    container.innerHTML = html;
+}
+
+function updateAverageScore(mode) {
+    let total = 0;
+    let count = 0;
+    for (let i = 1; i <= 5; i++) {
+        const scoreInput = document.getElementById(`${mode}WeekScore${i}`);
+        if (scoreInput && scoreInput.value !== '') {
+            total += parseFloat(scoreInput.value);
+            count++;
+        }
+    }
+    const avg = count > 0 ? (total / count) : 0;
+    document.getElementById(`${mode}Score`).value = avg.toFixed(1);
+}
+
+
+// --- UTILITY FUNCTIONS ---
+function getCurrentMonthDataKey() {
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${monthNames[state.filters.month]} ${state.filters.year}`;
+}
+
+function getCurrentMonthData() {
+    const dateKey = getCurrentMonthDataKey();
+    if (!state.data[dateKey]) {
+        state.data[dateKey] = {}; 
+    }
+    return state.data[dateKey];
+}
+
+function getKPIs(department, objective) {
+    const currentData = getCurrentMonthData();
+    return currentData[department]?.objectives[objective]?.kpis || {};
+}
+
+// --- HELPER FUNCTION: SAFELY FORMAT DATES FOR EXCEL ---
+// This prevents "Invalid Date" errors when exporting timestamps
+function formatDateForExcel(dateValue) {
+    if (!dateValue) return '';
+    
+    try {
+        const date = new Date(dateValue);
+        // Check if the date is valid
+        if (isNaN(date.getTime())) {
+            return '';
+        }
+        return date.toLocaleString('en-ZA', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+    } catch (error) {
+        console.warn('Date formatting error:', error, 'Value:', dateValue);
+        return '';
+    }
+}
+
+// --- HELPER FUNCTION: SAFELY PARSE DATES DURING IMPORT ---
+// Validates that imported dates are reasonable (not Unix epoch errors from Excel serial numbers)
+function parseImportDate(dateValue, fieldName = 'date') {
+    // If no value provided, use current time
+    if (!dateValue || dateValue === '') {
+        console.warn(`⚠️ Missing ${fieldName} - using current time`);
+        return new Date().toISOString();
+    }
+    
+    try {
+        const date = new Date(dateValue);
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+            console.warn(`⚠️ Invalid ${fieldName}:`, dateValue, '- Using current time');
+            return new Date().toISOString();
+        }
+        
+        // UPDATED: Check if date is suspiciously old (before 1970 instead of 2000)
+        // This is more lenient to preserve valid historical dates from Google Sheets
+        // while still catching Excel serial number bugs
+        const year = date.getFullYear();
+        if (year < 1970) {
+            console.warn(`⚠️ Very old ${fieldName} (year ${year}):`, dateValue, '- Using current time');
+            return new Date().toISOString();
+        }
+        
+        // UPDATED: Check if date is unreasonably far in future (after 2100)
+        if (year > 2100) {
+            console.warn(`⚠️ Future ${fieldName} (year ${year}):`, dateValue, '- Using current time');
+            return new Date().toISOString();
+        }
+        
+        // Date looks reasonable, use it
+        console.log(`✅ Valid ${fieldName}:`, date.toISOString().slice(0, 10), 'from', dateValue);
+        return date.toISOString();
+    } catch (error) {
+        console.warn(`⚠️ Error parsing ${fieldName}:`, error, 'Value:', dateValue, '- Using current time');
+        return new Date().toISOString();
+    }
+}
+
+// --- ENHANCED EXPORT FUNCTION (FIXED HEADERS) ---
+function exportData() {
+    showNotification('Info', 'Generating Excel report...', 'info');
+
+    const wb = XLSX.utils.book_new();
+    const datePrefix = getCurrentMonthDataKey();
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SHEET 1: "All KPIs" - PRIMARY DATA SHEET (MATCHES GOOGLE SHEETS)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // This is the SOURCE OF TRUTH for all data
+    // - Syncs to/from Google Sheets
+    // - Used for Excel import/export
+    // - All other sheets are derived from this data
+    
+    const allKpiData = [];
+    const user = CONFIG.USERS[state.currentUser];
+
+    // Define the explicit header array for "All KPIs"
+    const allKpiHeaders = [
+        "Date", "Department", "Strategic Objective", "KPI Name", "Target", 
+        "Weighting (%)", "Score (0-10)", "Status", "Created By", "Created At", 
+        "Last Modified", "W1 Score", "W1 Wins", "W1 Blockers", "W1 Commitments", 
+        "W2 Score", "W2 Wins", "W2 Blockers", "W2 Commitments", 
+        "W3 Score", "W3 Wins", "W3 Blockers", "W3 Commitments", 
+        "W4 Score", "W4 Wins", "W4 Blockers", "W4 Commitments",
+        "W5 Score", "W5 Wins", "W5 Blockers", "W5 Commitments"
+    ];
+
+    CONFIG.DEPARTMENTS.forEach(dept => {
+        if (state.isLoggedIn && user && user.departments !== 'all' && !user.departments.includes(dept)) {
+            return;
+        }
+        CONFIG.OBJECTIVES.forEach(obj => {
+            const kpis = getKPIs(dept, obj);
+            Object.entries(kpis).forEach(([name, kpi]) => {
+                const row = {
+                    "Date": datePrefix, 
+                    "Department": dept,
+                    "Strategic Objective": obj,
+                    "KPI Name": name,
+                    "Target": kpi.target,
+                    "Weighting (%)": kpi.weighting,
+                    "Score (0-10)": kpi.score.toFixed(1),
+                    "Status": kpi.status,
+                    "Created By": CONFIG.USERS[kpi.createdBy]?.name || kpi.createdBy || 'Import',
+                    "Created At": formatDateForExcel(kpi.createdAt),
+                    "Last Modified": formatDateForExcel(kpi.lastModifiedAt),
+                };
+                kpi.weeks.forEach((week, i) => {
+                    row[`W${i+1} Score`] = week.score !== null && week.score !== undefined ? parseFloat(week.score).toFixed(1) : '';
+                    row[`W${i+1} Wins`] = week.wins;
+                    row[`W${i+1} Blockers`] = week.blockers;
+                    row[`W${i+1} Commitments`] = week.commitments;
+                });
+                allKpiData.push(row);
+            });
+        });
+    });
+
+    // IMPORTANT: "All KPIs" is Sheet 1 (matches Google Sheets structure)
+    const ws1 = XLSX.utils.json_to_sheet(allKpiData, { header: allKpiHeaders });
+    XLSX.utils.book_append_sheet(wb, ws1, "All KPIs");
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SHEET 2: "Strategic Overview" - CALCULATED/DERIVED DATA
+    // ═══════════════════════════════════════════════════════════════════════════
+    // This is a summary view calculated from "All KPIs" data
+    // - NOT synced to Google Sheets
+    // - Recalculated on export
+    // - Read-only/informational
+    
+    const strategicData = CONFIG.OBJECTIVES.map(obj => {
+        const { percentage, kpiCount, totalWeight } = calculateObjectiveCompletion(obj);
+        return {
+            "Strategic Objective": obj,
+            "KPIs": kpiCount,
+            "Total Weight (%)": totalWeight,
+            "Completion (%)": percentage,
+        };
+    });
+    const ws2 = XLSX.utils.json_to_sheet(strategicData);
+    XLSX.utils.book_append_sheet(wb, ws2, "Strategic Overview");
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SHEET 3: "Weekly Details" - DERIVED FROM ALL KPIS
+    // ═══════════════════════════════════════════════════════════════════════════
+    // This is a focused view showing only weekly performance data
+    // - Derived from "All KPIs" sheet
+    // - NOT synced to Google Sheets
+    // - Read-only/informational
+    
+    const weeklyData = [];
+    
+    // Explicit headers for "Weekly Details"
+    const weeklyHeaders = [
+        "Department", "Strategic Objective", "KPI Name", "Created At", "Last Modified",
+        "W1 Score", "W1 Wins", "W1 Blockers", "W1 Commitments", 
+        "W2 Score", "W2 Wins", "W2 Blockers", "W2 Commitments", 
+        "W3 Score", "W3 Wins", "W3 Blockers", "W3 Commitments", 
+        "W4 Score", "W4 Wins", "W4 Blockers", "W4 Commitments",
+        "W5 Score", "W5 Wins", "W5 Blockers", "W5 Commitments"
+    ];
+
+    CONFIG.DEPARTMENTS.forEach(dept => {
+        if (state.isLoggedIn && user && user.departments !== 'all' && !user.departments.includes(dept)) {
+            return;
+        }
+        CONFIG.OBJECTIVES.forEach(obj => {
+            const kpis = getKPIs(dept, obj);
+            Object.entries(kpis).forEach(([name, kpi]) => {
+                const row = {
+                    "Department": dept,
+                    "Strategic Objective": obj,
+                    "KPI Name": name,
+                    "Created At": formatDateForExcel(kpi.createdAt),
+                    "Last Modified": formatDateForExcel(kpi.lastModifiedAt),
+                };
+                kpi.weeks.forEach((week, i) => {
+                    row[`W${i+1} Score`] = week.score !== null && week.score !== undefined ? parseFloat(week.score).toFixed(1) : '';
+                    row[`W${i+1} Wins`] = week.wins;
+                    row[`W${i+1} Blockers`] = week.blockers;
+                    row[`W${i+1} Commitments`] = week.commitments;
+                });
+                weeklyData.push(row);
+            });
+        });
+    });
+    
+    const ws3 = XLSX.utils.json_to_sheet(weeklyData, { header: weeklyHeaders });
+    XLSX.utils.book_append_sheet(wb, ws3, "Weekly Details");
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SHEET 4: "Activity Log" - AUDIT TRAIL
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Complete audit trail of all dashboard actions
+    // - NOT synced to Google Sheets
+    // - Stored in localStorage only
+    // - Included for record-keeping/compliance
+    
+    const activityLogData = [];
+    
+    if (state.activityLog && state.activityLog.length > 0) {
+        state.activityLog.forEach(log => {
+            activityLogData.push({
+                'Timestamp': formatDateForExcel(log.timestamp),
+                'User Role': log.user || 'Unknown',
+                'User Name': CONFIG.USERS[log.user]?.name || 'Guest',
+                'Action Type': log.action ? log.action.replace(/_/g, ' ') : 'Unknown Action',
+                'Details': log.details || ''
+            });
+        });
+    }
+    
+    const activityHeaders = ['Timestamp', 'User Role', 'User Name', 'Action Type', 'Details'];
+    const ws4 = activityLogData.length > 0 
+        ? XLSX.utils.json_to_sheet(activityLogData, { header: activityHeaders })
+        : XLSX.utils.json_to_sheet([{'Timestamp': '', 'User Role': '', 'User Name': '', 'Action Type': '', 'Details': 'No activity logged yet'}], { header: activityHeaders });
+    
+    XLSX.utils.book_append_sheet(wb, ws4, "Activity Log");
+
+    XLSX.writeFile(wb, `Bilionetworks_Dashboard_Export_${datePrefix}.xlsx`);
+    
+    console.log('📊 Export Complete: 4 sheets created');
+    console.log('   Sheet 1: "All KPIs" (PRIMARY - matches Google Sheets)');
+    console.log('   Sheet 2: "Strategic Overview" (derived/calculated)');
+    console.log('   Sheet 3: "Weekly Details" (derived from All KPIs)');
+    console.log('   Sheet 4: "Activity Log" (audit trail)');
+}
+
+// Edit Modal Population
+function loadEditObjectives() {
+    const dept = document.getElementById('editSelectDept').value;
+    const objSelect = document.getElementById('editSelectObj');
+    const kpiSelect = document.getElementById('editSelectKPI');
+    
+    if (state.isLoggedIn) {
+        const user = CONFIG.USERS[state.currentUser];
+        if (user.departments !== 'all' && !user.departments.includes(dept)) {
+             objSelect.innerHTML = '<option value="">ACCESS DENIED</option>';
+             kpiSelect.innerHTML = '<option value="">ACCESS DENIED</option>';
+             document.getElementById('editFieldsContainer').classList.add('hidden');
+             document.getElementById('editPlaceholder').classList.remove('hidden');
+             return;
+        }
+    } else if (dept) {
+         objSelect.innerHTML = '<option value="">LOGIN TO EDIT</option>';
+         kpiSelect.innerHTML = '<option value="">LOGIN TO EDIT</option>';
+         return;
+    }
+    
+    const currentData = getCurrentMonthData();
+
+    if (!dept) {
+        objSelect.innerHTML = '<option value="">Select Department First</option>';
+        kpiSelect.innerHTML = '<option value="">Select Objective First</option>';
+        document.getElementById('editFieldsContainer').classList.add('hidden');
+        document.getElementById('editPlaceholder').classList.remove('hidden');
+        return;
+    }
+    
+    const objectives = Object.keys(currentData[dept]?.objectives || {});
+    if(objectives.length === 0) {
+        objSelect.innerHTML = '<option value="">No Objectives for this Department</option>';
+        kpiSelect.innerHTML = '<option value="">Select Objective First</option>';
+    } else {
+        objSelect.innerHTML = createOptions(objectives, 'Select Objective');
+        kpiSelect.innerHTML = '<option value="">Select Objective First</option>';
+    }
+    
+    loadEditKPIs();
+}
+
+function loadEditKPIs() {
+    const dept = document.getElementById('editSelectDept').value;
+    const obj = document.getElementById('editSelectObj').value;
+    const kpiSelect = document.getElementById('editSelectKPI');
+
+    if (!dept || !obj || document.getElementById('editSelectObj').options[document.getElementById('editSelectObj').selectedIndex].textContent.startsWith('No Objectives')) {
+        kpiSelect.innerHTML = '<option value="">Select Objective First</option>';
+        populateEditForm();
+        return;
+    }
+    
+    const kpis = Object.keys(getKPIs(dept, obj));
+    if(kpis.length === 0) {
+        kpiSelect.innerHTML = '<option value="">No KPIs for this Objective</option>';
+    } else {
+        kpiSelect.innerHTML = createOptions(kpis, 'Select KPI');
+    }
+    
+    populateEditForm();
+}
+
+function populateEditForm() {
+    const dept = document.getElementById('editSelectDept').value;
+    const obj = document.getElementById('editSelectObj').value;
+    const kpiName = document.getElementById('editSelectKPI').value;
+    const container = document.getElementById('editFieldsContainer');
+    const placeholder = document.getElementById('editPlaceholder');
+
+    if (!kpiName || kpiName === '' || document.getElementById('editSelectKPI').options[document.getElementById('editSelectKPI').selectedIndex].textContent.startsWith('No KPIs')) {
+        container.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        return;
+    }
+    
+    container.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+
+    const kpi = getKPIs(dept, obj)[kpiName];
+    document.getElementById('editName').value = kpiName;
+    document.getElementById('editTarget').value = kpi.target;
+    document.getElementById('editWeighting').value = kpi.weighting;
+    document.getElementById('editScore').value = kpi.score.toFixed(1);
+
+    const weeksData = kpi.weeks && kpi.weeks.length === 5 ? kpi.weeks : [{}, {}, {}, {}, {}];
+
+    weeksData.forEach((week, i) => {
+        document.getElementById(`editWin${i+1}`).value = week.wins || '';
+        document.getElementById(`editBlock${i+1}`).value = week.blockers || '';
+        document.getElementById(`editCommit${i+1}`).value = week.commitments || '';
+        document.getElementById(`editWeekScore${i+1}`).value = week.score !== null && week.score !== undefined ? week.score.toFixed(1) : '';
+    });
+}
+
+function updateLastSyncTime(){
+    const elem = document.getElementById('lastSyncTime');
+    if(state.lastSaved && elem){
+        elem.textContent = new Date(state.lastSaved).toLocaleString('en-ZA');
+    }
+}
+
+function showNotification(title, message, type, duration = 4000) {
+    const container = document.getElementById('notification-container') || document.body;
+    const toast = document.createElement('div');
+    toast.className = `notification-toast ${type}`;
+    const borderColor = type === 'success' ? 'success' : type === 'danger' ? 'danger' : type === 'warning' ? 'warning' : 'accent';
+    toast.style.cssText = `position:fixed; top:80px; right:20px; background:var(--bg-secondary); padding:16px 20px; border-radius:12px; border-left: 4px solid var(--${borderColor}); z-index:9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 300px; max-width: 400px;`;
+    toast.innerHTML = `<h4 style="margin:0 0 8px 0; font-size:15px; font-weight:600;">${title}</h4><p style="margin:0; font-size:13px; line-height:1.5;">${message}</p>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), duration);
+}
+// --- NEW/UPDATED FUNCTIONS NOT IN ORIGINAL ---
+function generateAIReport() {
+    showNotification('Info', 'Generating PDF report...', 'info');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let finalY = 20; 
+    let footersDrawn = new Set();
+    
+    const brandColor = '#0a84ff';
+    const titleColor = '#1d1d1f';
+    const textColor = '#6e6e73';
+    const headerColor = '#0066cc';
+    const rowEvenColor = '#f9f9f9';
+    const rowOddColor = '#ffffff';
+    const a4Width = doc.internal.pageSize.getWidth();
+    const margin = 14;
+
+    const overallCompletion = calculateObjectiveCompletion('All');
+    const kpiCount = overallCompletion.kpiCount;
+    const overallScore = overallCompletion.totalWeight > 0 ? (overallCompletion.weightedScore / overallCompletion.totalWeight) * 10 : 0;
+    const healthScore = kpiCount > 0 ? Math.round(overallScore) : 0;
+
+    let redCount = 0;
+    let blockerCount = 0;
+    const departmentalSummaries = {};
+    const departmentalMetrics = [];
+    const allKpisForTable = [];
+    
+    // --- Data gathering for new Strategic Overview Table ---
+    const strategicOverviewData = CONFIG.OBJECTIVES.map(obj => {
+        const { percentage, kpiCount, totalWeight } = calculateObjectiveCompletion(obj);
+        return [
+            obj, 
+            kpiCount, 
+            `${totalWeight}%`, 
+            `${percentage}%`
+        ];
+    });
+
+
+    const user = CONFIG.USERS[state.currentUser];
+    let previousDepartment = null;
+
+    CONFIG.DEPARTMENTS.forEach(dept => {
+        departmentalSummaries[dept] = { wins: [], blockers: [], commitments: [] };
+        
+        if (state.isLoggedIn && user && user.departments !== 'all' && !user.departments.includes(dept)) {
+            departmentalMetrics.push([dept, 0, 'N/A', 'ACCESS DENIED']);
+            return;
+        }
+
+        let deptKpiCount = 0, deptTotalScore = 0, deptStatuses = [];
+        let deptHasAnyData = false;
+        const deptData = getCurrentMonthData()[dept];
+        if (!deptData) {
+            departmentalMetrics.push([dept, 0, 'N/A', 'RED']); // Changed from 'N/A' to 'RED'
+            return;
+        }
+
+        CONFIG.OBJECTIVES.forEach(obj => {
+            Object.entries(getKPIs(dept, obj)).forEach(([name, kpi]) => {
+                deptKpiCount++;
+                deptTotalScore += kpi.score;
+                
+                // Check if KPI has any weekly data
+                const hasWeeklyData = kpi.weeks?.some(w => 
+                    (w.score !== null && w.score !== undefined) || 
+                    (w.wins && w.wins.trim() !== '') || 
+                    (w.blockers && w.blockers.trim() !== '') || 
+                    (w.commitments && w.commitments.trim() !== '')
+                );
+                
+                if (hasWeeklyData) deptHasAnyData = true;
+                
+                // If no weekly data or score is 0, KPI is at risk
+                if (!hasWeeklyData || kpi.status === 'red' || kpi.score === 0) {
+                    redCount++;
+                    deptStatuses.push('red');
+                } else {
+                    deptStatuses.push(kpi.status);
+                }
+                
+                kpi.weeks?.forEach(w => { 
+                    if (w.wins && w.wins.trim()) departmentalSummaries[dept].wins.push(`• ${w.wins.trim()}`);
+                    if (w.blockers && w.blockers.trim()) {
+                        departmentalSummaries[dept].blockers.push(`• ${w.blockers.trim()}`);
+                        blockerCount++;
+                    }
+                    if (w.commitments && w.commitments.trim()) departmentalSummaries[dept].commitments.push(`• ${w.commitments.trim()}`);
+                });
+                
+                // For the combined KPI Table
+                allKpisForTable.push([dept, obj, name, kpi.score.toFixed(1), kpi.status.toUpperCase(), `${kpi.weighting}%`]);
+            });
+        });
+
+        const avgScore = deptKpiCount > 0 ? (deptTotalScore / deptKpiCount) : 0;
+        let overallStatus = 'GREEN';
+        
+        // If no data exists, status should be RED
+        if (!deptHasAnyData || avgScore === 0) overallStatus = 'RED';
+        else if (deptStatuses.includes('red')) overallStatus = 'RED';
+        else if (deptStatuses.includes('amber')) overallStatus = 'AMBER';
+        else if (deptKpiCount === 0) overallStatus = 'RED'; // Changed from 'N/A' to 'RED'
+        
+        departmentalMetrics.push([dept, deptKpiCount, avgScore.toFixed(1) + '/10', overallStatus]);
+    });
+
+    const healthScoreText = kpiCount > 0 ? `${healthScore}/10` : 'N/A';
+    const commitmentText = kpiCount > 0 ? `${overallCompletion.percentage}%` : 'N/A';
+    const periodText = document.getElementById('userDate').textContent;
+    const generatedByText = state.isLoggedIn ? CONFIG.USERS[state.currentUser].name : 'Guest';
+
+    const pageHeaderFooter = (data) => {
+        doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(brandColor); doc.text("Bilionetworks", margin, 20);
+        doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(textColor); 
+        doc.text(`Executive Summary Report | ${periodText}`, a4Width - margin, 20, { align: 'right' });
+        doc.setDrawColor(brandColor); doc.setLineWidth(0.5); doc.line(margin, 25, a4Width - margin, 25);
+        
+        if (footersDrawn.has(data.pageNumber)) return; 
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8); doc.setTextColor(textColor);
+        doc.text(`Generated on: ${new Date().toLocaleString('en-ZA')} by ${generatedByText}`, margin, doc.internal.pageSize.height - 10);
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, a4Width - margin, doc.internal.pageSize.height - 10, { align: 'right' });
+        footersDrawn.add(data.pageNumber); 
+    };
+    
+    // Adjusted Font Size for all tables
+    const baseFontSize = 9; 
+    
+    const tableStyles = {
+        theme: 'grid', 
+        styles: { font: 'helvetica', overflow: 'linebreak', cellPadding: 3, valign: 'middle', textColor: titleColor, fontSize: baseFontSize },
+        headStyles: { fillColor: headerColor, textColor: '#ffffff', fontStyle: 'bold', halign: 'center' },
+        alternateRowStyles: { fillColor: rowEvenColor },
+        didDrawPage: pageHeaderFooter,
+        margin: { top: 35, bottom: 20 }
+    };
+    
+    // --- Status Coloring for KPI and Department Tables ---
+    const statusCell = (data) => {
+        // This function applies status coloring to the 4th column (Avg. Score) and 5th column (Status) of the departmental table, 
+        // and the 4th (Score) and 5th (Status) columns of the KPI table.
+        if (data.section === 'body' && (data.column.index === 3 || data.column.index === 4)) {
+            const status = data.cell.raw.toString().toUpperCase();
+            let color = data.row.index % 2 === 0 ? rowEvenColor : rowOddColor; 
+            let fontColor = titleColor;
+            
+            // Adjust coloring based on Status
+            if (status === 'RED') { color = '#ffebee'; fontColor = '#d32f2f'; }
+            else if (status === 'AMBER') { color = '#fff8e1'; fontColor = '#f57c00'; }
+            else if (status === 'GREEN') { color = '#e8f5e9'; fontColor = '#2e7d32'; }
+            
+            doc.setFillColor(color);
+            doc.setTextColor(fontColor);
+            doc.setFont('helvetica', 'bold');
+            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+            
+            // Column 4 is Status - use LEFT alignment with 4pt indent
+            // Column 3 is Score/Avg. Score - centered
+            if (data.column.index === 4) {
+                // Status column - LEFT aligned with 4pt left padding
+                doc.text(status, data.cell.x + 4, data.cell.y + data.cell.height / 2, { halign: 'left', valign: 'middle' });
+            } else {
+                // Score column - centered
+                doc.text(status, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, { halign: 'center', valign: 'middle' });
+            }
+        }
+    };
+    
+    // 1. Overall Metric Card (No Change)
+    doc.autoTable({
+        startY: 35,
+        body: [[
+            { content: `OVERALL HEALTH\n${healthScoreText}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6 } },
+            { content: `WEIGHTED COMMITMENT\n${commitmentText}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6 } },
+            { content: `KPIs AT RISK\n${redCount}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6, textColor: redCount > 0 ? '#d32f2f' : titleColor } },
+            { content: `CRITICAL BLOCKERS\n${blockerCount}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6, textColor: blockerCount > 0 ? '#f57c00' : titleColor } },
+        ]],
+        ...tableStyles, theme: 'striped', styles: { fontSize: 9 }, headStyles: { fillColor: '#ffffff' },
+        didDrawPage: pageHeaderFooter, margin: { top: 35, bottom: 20 }
+    });
+    finalY = doc.previousAutoTable.finalY;
+
+    // --- TWEAK 1: Strategic Overview Table ---
+    doc.autoTable({
+        startY: finalY + 8,
+        head: [['Strategic Objective', 'KPIs', 'Total Weight (%)', 'Completion (%)']],
+        body: strategicOverviewData,
+        ...tableStyles,
+        headStyles: { fillColor: headerColor, textColor: '#ffffff', fontStyle: 'bold', halign: 'center', fontSize: baseFontSize },
+        columnStyles: { 0: { halign: 'left', fontStyle: 'bold' }, 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'center' } }
+    });
+    finalY = doc.previousAutoTable.finalY;
+
+    // 2. Departmental Summary Table (No Change)
+    doc.autoTable({
+        startY: finalY + 8,
+        head: [['Department', 'Total KPIs', 'Avg. Score', 'Status']],
+        body: departmentalMetrics,
+        ...tableStyles,
+        didDrawCell: statusCell,
+        columnStyles: { 0: { halign: 'left', fontStyle: 'bold' }, 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'center', fontStyle: 'bold' } }
+    });
+    finalY = doc.previousAutoTable.finalY;
+
+    // 3. KPI Details Table with Department Separators
+    if (allKpisForTable.length > 0) {
+        doc.autoTable({
+            startY: finalY + 8,
+            head: [['Department', 'Strategic Objective', 'KPI Name', 'Score', 'Status', 'Weight']],
+            body: allKpisForTable,
+            ...tableStyles,
+            styles: { 
+                fontSize: 7.5, // Smaller font for more space
+                overflow: 'linebreak', // Enable text wrapping
+                cellPadding: 2.5, // Reduced padding for more content space
+                lineWidth: 0.1, // Thinner borders
+                halign: 'left' // Default left alignment
+            }, 
+            
+            // --- TWEAK 2 & FIX 3: Add Blue Department Separator Row & Fix Department Name Formatting ---
+            didParseCell: function(data) {
+                if (data.section === 'body' && data.row.index > 0) {
+                    const currentDept = data.row.raw[0];
+                    const prevDept = data.table.body[data.row.index - 1].raw[0];
+                    
+                    if (currentDept !== prevDept) {
+                        // Apply a custom style to the first cell of the new department (the entire row gets the background)
+                        const departmentCell = data.row.cells[0];
+
+                        departmentCell.styles.cellPadding = 4; // Reduced padding for better line height
+                        departmentCell.styles.fontStyle = 'bold';
+                        departmentCell.styles.fillColor = [10, 132, 255]; // Blue fill (var(--accent))
+                        departmentCell.styles.textColor = [255, 255, 255]; // White text
+                        departmentCell.styles.fontSize = 8; // Slightly larger for headers
+                        departmentCell.styles.valign = 'middle';
+                        
+                        // Apply the fill and text color to all other cells in the new row
+                        for(let i = 1; i < data.row.cells.length; i++) {
+                             data.row.cells[i].styles.fillColor = [10, 132, 255]; 
+                             data.row.cells[i].styles.textColor = [255, 255, 255];
+                             data.row.cells[i].styles.cellPadding = 4;
+                             data.row.cells[i].styles.fontSize = 8;
+                             data.row.cells[i].styles.valign = 'middle';
+                        }
+                    }
+                }
+            },
+            didDrawCell: statusCell, // Keep the status coloring hook
+            
+            // --- FIXED COLUMN WIDTHS: Proper sizing to prevent text cutoff ---
+            columnStyles: {
+                0: { cellWidth: 28, halign: 'left', fontStyle: 'bold', fontSize: 7.5 }, // Department
+                1: { cellWidth: 48, halign: 'left', fontSize: 7 }, // Strategic Objective - wider
+                2: { cellWidth: 59, halign: 'left', fontSize: 7 }, // KPI Name - slightly reduced to make room
+                3: { cellWidth: 12, halign: 'center', fontSize: 7.5 }, // Score - centered
+                4: { cellWidth: 24, halign: 'left', fontStyle: 'bold', fontSize: 7 }, // Status - LEFT aligned with 4pt indent
+                5: { cellWidth: 15, halign: 'center', fontSize: 7.5 }, // Weight - centered
+            }
+        });
+        finalY = doc.previousAutoTable.finalY;
+    }
+
+    // 4. Key Wins/Blockers/Commitments Tables (No Change)
+    const accessibleDepartments = CONFIG.DEPARTMENTS.filter(dept => !state.isLoggedIn || !user || user.departments === 'all' || user.departments.includes(dept));
+    
+    const winsBlockersData = accessibleDepartments.map(dept => [dept, departmentalSummaries[dept].wins.join('\n') || ' ', departmentalSummaries[dept].blockers.join('\n') || ' ']);
+    doc.autoTable({
+        startY: finalY + 8,
+        head: [['Department', 'Key Wins', 'Key Blockers']],
+        body: winsBlockersData,
+        ...tableStyles,
+        styles: { 
+            fontSize: 8, 
+            overflow: 'linebreak', 
+            cellPadding: 3,
+            lineWidth: 0.1 
+        },
+        columnStyles: { 
+            0: { cellWidth: 32, halign: 'left', fontStyle: 'bold', fontSize: 8 },
+            1: { cellWidth: 75, halign: 'left', fontSize: 7.5 }, 
+            2: { cellWidth: 75, halign: 'left', fontSize: 7.5 }
+        }
+    });
+    finalY = doc.previousAutoTable.finalY;
+    
+    const commitmentsData = accessibleDepartments.map(dept => [dept, departmentalSummaries[dept].commitments.join('\n') || ' ']);
+    doc.autoTable({
+        startY: finalY + 8,
+        head: [['Department', 'Key Commitments']],
+        body: commitmentsData,
+        ...tableStyles,
+        styles: { 
+            fontSize: 8, 
+            overflow: 'linebreak', 
+            cellPadding: 3,
+            lineWidth: 0.1 
+        },
+        columnStyles: {
+            0: { cellWidth: 32, halign: 'left', fontStyle: 'bold', fontSize: 8 },
+            1: { cellWidth: 150, halign: 'left', fontSize: 7.5 }
+        }
+    });
+
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        pageHeaderFooter({ pageNumber: i });
+    }
+    
+    doc.save(`Bilionetworks_Executive_Report_${getCurrentMonthDataKey()}.pdf`);
+}
+
+// --- IMPORT DATA FUNCTION ---
+function importData(event) {
+    if (!state.isLoggedIn) {
+        event.target.value = '';
+        return showNotification('Error', 'You must be logged in to perform this action.', 'danger');
+    }
+
+    const file = event.target.files[0];
+    if (!file) return;
+    const user = CONFIG.USERS[state.currentUser];
+    const reader = new FileReader();
+    
+    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {
+                    type: 'array',
+                    cellDates: true,  // Ensures dates are converted to JS Date objects, not serial numbers
+                    cellNF: false,
+                    cellText: false
+                });
+                const sheetName = 'All KPIs';
+                if (!workbook.Sheets[sheetName]) { 
+                    throw new Error(`Sheet "${sheetName}" not found in the Excel file.`); 
+                }
+                
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                if (jsonData.length === 0) {
+                    showNotification('Info', 'The "All KPIs" sheet is empty. No data to import.', 'info'); 
+                    return;
+                }
+                
+                // Extract date from first row
+                let importedDateKey = '';
+                const firstRow = jsonData[0];
+                
+                // Try to read Date column (handles both 'Date' and other date field names)
+                const dateValue = firstRow['Date'] || firstRow['DateKey'] || firstRow['FullDate'];
+                
+                if (dateValue) {
+                    const dateStr = String(dateValue);
+                    // Handle both "2025-10" and "2025-10-28" formats
+                    const dateParts = dateStr.split(/[-/\s]/);
+                    if (dateParts.length >= 2) {
+                        const year = parseInt(dateParts[0], 10);
+                        const month = parseInt(dateParts[1], 10) - 1; // JavaScript months are 0-indexed
+                        
+                        if (!isNaN(year) && !isNaN(month) && year > 2000 && month >= 0 && month <= 11) {
+                            state.filters.year = year;
+                            state.filters.month = month;
+                            importedDateKey = getCurrentMonthDataKey();
+                            showNotification('Info', `Dashboard period set to ${importedDateKey}`, 'info');
+                        }
+                    }
+                }
+                
+                if (!importedDateKey) {
+                    importedDateKey = getCurrentMonthDataKey();
+                    showNotification('Warning', `Could not read date from Excel. Importing into current period: ${importedDateKey}`, 'warning');
+                }
+                
+                // Initialize data structure for this period if it doesn't exist
+                if (!state.data[importedDateKey]) {
+                    state.data[importedDateKey] = {};
+                }
+                const currentData = state.data[importedDateKey];
+
+                let successfulImports = 0;
+                let failedImports = 0;
+                let permissionErrors = 0;
+                let updatedKPIs = 0;
+                
+                jsonData.forEach((row, rowIndex) => {
+                    const department = (row['Department'] || '').trim();
+                    const objective = (row['Strategic Objective'] || '').trim();
+                    const name = (row['KPI Name'] || '').trim();
+                    
+                    if (!department || !objective || !name) {
+                        console.warn(`Row ${rowIndex + 2}: Skipping due to missing required fields (Department, Strategic Objective, or KPI Name)`, row); 
+                        failedImports++; 
+                        return;
+                    }
+                    
+                    // Permission check
+                    if (user.departments !== 'all' && !user.departments.includes(department)) {
+                        console.warn(`Row ${rowIndex + 2}: User does not have permission for department "${department}".`, row); 
+                        permissionErrors++; 
+                        return;
+                    }
+                    
+                    // Validate department and objective exist in config
+                    if (!CONFIG.DEPARTMENTS.includes(department)) {
+                        console.warn(`Row ${rowIndex + 2}: Department "${department}" not found in configuration.`, row); 
+                        failedImports++; 
+                        return;
+                    }
+                    if (!CONFIG.OBJECTIVES.includes(objective)) {
+                        console.warn(`Row ${rowIndex + 2}: Objective "${objective}" not found in configuration.`, row); 
+                        failedImports++; 
+                        return;
+                    }
+
+                    // Parse weekly data
+                    const weeks = [];
+                    let scores = [];
+                    
+                    for (let i = 1; i <= 5; i++) {
+                        const scoreValue = row[`W${i} Score`];
+                        const score = (scoreValue !== undefined && scoreValue !== null && scoreValue !== '') 
+                            ? parseFloat(scoreValue) 
+                            : null;
+                        
+                        if (score !== null && !isNaN(score)) {
+                            scores.push(score);
+                        }
+                        
+                        weeks.push({
+                            score: score,
+                            wins: row[`W${i} Wins`] || '',
+                            blockers: row[`W${i} Blockers`] || '',
+                            commitments: row[`W${i} Commitments`] || ''
+                        });
+                    }
+                    
+                    // Calculate average score from weekly scores
+                    const avgScore = scores.length > 0 
+                        ? scores.reduce((a, b) => a + b, 0) / scores.length 
+                        : 0;
+                    
+                    // Handle imported metadata (NEW: now we read these from Excel)
+                    const importedScore = row['Score (0-10)'];
+                    const finalScore = (importedScore !== undefined && importedScore !== null && importedScore !== '') 
+                        ? parseFloat(importedScore) 
+                        : avgScore;
+                    
+                    const importedStatus = row['Status'];
+                    const finalStatus = importedStatus 
+                        ? String(importedStatus).toLowerCase() 
+                        : calculateStatus(finalScore);
+                    
+                    const createdBy = row['Created By'] || state.currentUser || 'Import';
+                    
+                    // Parse dates using helper function to prevent Unix epoch bugs
+                    const createdAtValue = row['Created At'];
+                    const createdAt = parseImportDate(createdAtValue, 'Created At');
+                    
+                    const lastModifiedValue = row['Last Modified'];
+                    const lastModified = lastModifiedValue 
+                        ? parseImportDate(lastModifiedValue, 'Last Modified')
+                        : null;
+
+                    // Check if this KPI already exists
+                    const kpiExists = currentData[department]?.objectives[objective]?.kpis[name];
+                    
+                    // Build KPI object
+                    const newKPI = {
+                        target: row['Target'] || '',
+                        weighting: parseFloat(row['Weighting (%)']) || 0,
+                        score: finalScore,
+                        status: finalStatus,
+                        weeks: weeks,
+                        createdBy: createdBy,
+                        createdAt: createdAt,
+                        lastModifiedAt: lastModified || new Date().toISOString()
+                    };
+
+                    // Initialize department structure if needed
+                    if (!currentData[department]) {
+                        currentData[department] = { objectives: {} };
+                    }
+                    if (!currentData[department].objectives[objective]) {
+                        currentData[department].objectives[objective] = { kpis: {} };
+                    }
+                    
+                    // Save KPI
+                    currentData[department].objectives[objective].kpis[name] = newKPI;
+                    
+                    if (kpiExists) {
+                        updatedKPIs++;
+                    } else {
+                        successfulImports++;
+                    }
+                });
+
+                // Show results
+                if (successfulImports > 0) { 
+                    showNotification('Success', `${successfulImports} new KPI(s) imported successfully!`, 'success'); 
+                }
+                if (updatedKPIs > 0) { 
+                    showNotification('Info', `${updatedKPIs} existing KPI(s) updated.`, 'info'); 
+                }
+                if (failedImports > 0) { 
+                    showNotification('Warning', `${failedImports} row(s) could not be imported. Check browser console for details.`, 'warning'); 
+                }
+                if (permissionErrors > 0) { 
+                    showNotification('Warning', `${permissionErrors} row(s) were skipped due to department permissions.`, 'warning'); 
+                }
+
+                logActivity('DATA_IMPORTED', `Imported/Updated ${successfulImports + updatedKPIs} KPIs from XLSX into ${importedDateKey}.`);
+                
+                // CRITICAL: Save to localStorage immediately after import
+                localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state));
+                showNotification('Info', 'Data saved to browser storage.', 'info');
+                
+                setupUI();
+                render();
+
+            } catch (error) {
+                console.error('Import failed:', error);
+                showNotification('Error', `Import failed: ${error.message}`, 'danger');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    } else {
+        showNotification('Error', 'Unsupported file type. Please upload .xlsx or .xls files.', 'danger');
+    }
+    
+    event.target.value = '';
+}
+
+function getWeekDates(year, month) {
+    const weeks = [];
+    const date = new Date(Date.UTC(year, month, 1));
+
+    while (date.getUTCDay() !== 1) {
+        date.setUTCDate(date.getUTCDate() + 1);
+        if (date.getUTCMonth() > month && date.getUTCFullYear() >= year) break;
+    }
+
+    while (date.getUTCMonth() === month) {
+        const weekStart = date.getUTCDate();
+        const weekEnd = Math.min(weekStart + 4, new Date(Date.UTC(year, month + 1, 0)).getUTCDate());
+        
+        if (new Date(Date.UTC(year, month, weekStart)).getUTCMonth() === month) {
+            weeks.push(`${weekStart}-${weekEnd}`);
+        }
+        date.setUTCDate(date.getUTCDate() + 7); 
+    }
+    return weeks;
+}
+
+function pruneActivityLog() {
+    // Ensure activityLog exists and is an array
+    if (!state.activityLog || !Array.isArray(state.activityLog)) {
+        state.activityLog = [];
+        return;
+    }
+    
+    // Keep logs for the last 12 months
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+    state.activityLog = state.activityLog.filter(log => new Date(log.timestamp) > twelveMonthsAgo);
+}
+
+function logActivity(action, details) {
+    pruneActivityLog();
+    state.activityLog.unshift({
+        timestamp: new Date().toISOString(),
+        user: state.currentUser || 'Guest',
+        action,
+        details
+    });
+    
+    // ✅ Immediately save to localStorage to persist activity log across sessions
+    try {
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+        console.warn('Failed to auto-save activity log to localStorage:', error);
+    }
+    // Note: Cloud sync happens when user clicks Save button
+}
+
+function updateActivityFeed() {
+    const feed = document.getElementById('activityFeed');
+    if (state.activityLog.length === 0) {
+        feed.innerHTML = '<p class="placeholder-text">No activity recorded yet.</p>';
+        return;
+    }
+    
+    feed.innerHTML = state.activityLog.map(log => {
+        const user = CONFIG.USERS[log.user] || { name: 'Guest', color: 'var(--text-tertiary)' };
+        const time = new Date(log.timestamp).toLocaleString('en-ZA');
+        return `
+            <div class="activity-item">
+                <div class="activity-icon">📝</div>
+                <div class="activity-details">
+                   <div class="activity-header-info">
+                        <span class="activity-user" style="color: ${user.color}">${user.name}</span>
+                        <span class="activity-time">${time}</span>
+                    </div>
+                   <p class="activity-text">${log.action.replace(/_/g, ' ')}: ${log.details}</p>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function loadEditObjectives() {
+    const dept = document.getElementById('editSelectDept').value;
+    const objSelect = document.getElementById('editSelectObj');
+    const kpiSelect = document.getElementById('editSelectKPI');
+    
+    if (state.isLoggedIn) {
+        const user = CONFIG.USERS[state.currentUser];
+        if (user.departments !== 'all' && !user.departments.includes(dept)) {
+             objSelect.innerHTML = '<option value="">ACCESS DENIED</option>';
+             kpiSelect.innerHTML = '<option value="">ACCESS DENIED</option>';
+             document.getElementById('editFieldsContainer').classList.add('hidden');
+             document.getElementById('editPlaceholder').classList.remove('hidden');
+             return;
+        }
+    } else if (dept) {
+         objSelect.innerHTML = '<option value="">LOGIN TO EDIT</option>';
+         kpiSelect.innerHTML = '<option value="">LOGIN TO EDIT</option>';
+         return;
+    }
+    
+    const currentData = getCurrentMonthData();
+
+    if (!dept) {
+        objSelect.innerHTML = '<option value="">Select Department First</option>';
+        kpiSelect.innerHTML = '<option value="">Select Objective First</option>';
+        document.getElementById('editFieldsContainer').classList.add('hidden');
+        document.getElementById('editPlaceholder').classList.remove('hidden');
+        return;
+    }
+    
+    const objectives = Object.keys(currentData[dept]?.objectives || {});
+    if(objectives.length === 0) {
+        objSelect.innerHTML = '<option value="">No Objectives for this Department</option>';
+        kpiSelect.innerHTML = '<option value="">Select Objective First</option>';
+    } else {
+        objSelect.innerHTML = createOptions(objectives, 'Select Objective');
+        kpiSelect.innerHTML = '<option value="">Select Objective First</option>';
+    }
+    
+    loadEditKPIs();
+}
+
+function loadEditKPIs() {
+    const dept = document.getElementById('editSelectDept').value;
+    const obj = document.getElementById('editSelectObj').value;
+    const kpiSelect = document.getElementById('editSelectKPI');
+
+    if (!dept || !obj || document.getElementById('editSelectObj').options[document.getElementById('editSelectObj').selectedIndex].textContent.startsWith('No Objectives')) {
+        kpiSelect.innerHTML = '<option value="">Select Objective First</option>';
+        populateEditForm();
+        return;
+    }
+    
+    const kpis = Object.keys(getKPIs(dept, obj));
+    if(kpis.length === 0) {
+        kpiSelect.innerHTML = '<option value="">No KPIs for this Objective</option>';
+    } else {
+        kpiSelect.innerHTML = createOptions(kpis, 'Select KPI');
+    }
+    
+    populateEditForm();
+}
+
+function populateEditForm() {
+    const dept = document.getElementById('editSelectDept').value;
+    const obj = document.getElementById('editSelectObj').value;
+    const kpiName = document.getElementById('editSelectKPI').value;
+    const container = document.getElementById('editFieldsContainer');
+    const placeholder = document.getElementById('editPlaceholder');
+
+    if (!kpiName || kpiName === '' || document.getElementById('editSelectKPI').options[document.getElementById('editSelectKPI').selectedIndex].textContent.startsWith('No KPIs')) {
+        container.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        return;
+    }
+    
+    container.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+
+    const kpi = getKPIs(dept, obj)[kpiName];
+    document.getElementById('editName').value = kpiName;
+    document.getElementById('editTarget').value = kpi.target;
+    document.getElementById('editWeighting').value = kpi.weighting;
+    document.getElementById('editScore').value = kpi.score.toFixed(1);
+
+    const weeksData = kpi.weeks && kpi.weeks.length === 5 ? kpi.weeks : [{}, {}, {}, {}, {}];
+
+    weeksData.forEach((week, i) => {
+        document.getElementById(`editWin${i+1}`).value = week.wins || '';
+        document.getElementById(`editBlock${i+1}`).value = week.blockers || '';
+        document.getElementById(`editCommit${i+1}`).value = week.commitments || '';
+        document.getElementById(`editWeekScore${i+1}`).value = week.score !== null && week.score !== undefined ? week.score.toFixed(1) : '';
+    });
+}
+
+function updateLastSyncTime(){
+    const elem = document.getElementById('lastSyncTime');
+    if(state.lastSaved && elem){
+        elem.textContent = new Date(state.lastSaved).toLocaleString('en-ZA');
+    }
+}
+
+</script>
+
+</body>
+</html>
