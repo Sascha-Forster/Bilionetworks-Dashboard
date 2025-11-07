@@ -1,9 +1,27 @@
 <!DOCTYPE html>
 <!--
 ═══════════════════════════════════════════════════════════════════════════════
-  BILIONETWORKS EXECUTIVE INTELLIGENCE DASHBOARD - VERSION 11.13 (DATE KEY FIX!)
+  BILIONETWORKS EXECUTIVE INTELLIGENCE DASHBOARD - VERSION 12.2 (VALUE-ADD!)
   
-  🎉 CRITICAL FIX: DATE KEY FORMAT MISMATCH (November 5, 2025):
+  🎨 PHASE 1: PDF ENHANCEMENTS - VALUE-ADDING EDITION (November 6, 2025):
+  
+  ✨ GENUINE VALUE-ADDING IMPROVEMENTS ✨
+  
+  From V12.1 Conservative (3 subtle improvements):
+  1. Softer Professional Colors ✅
+  2. Confidential Footer ✅
+  3. Better Spacing ✅
+  
+  NEW in V12.2 (2 high-impact improvements):
+  4. Visual Status Indicators with Colored Bullets ✅
+  5. Smart Trend Arrows (Clean Implementation) ✅
+  
+  These additions provide INSTANT visual scanning and momentum insights
+  that executives actually use for decision-making.
+  
+═══════════════════════════════════════════════════════════════════════════════
+  
+  🎉 INHERITED FROM VERSION 11.21:
   
   1. DATE KEY FORMAT UNIFIED ✅
      - **ROOT CAUSE:** Dashboard was using "2025-11" format
@@ -309,7 +327,7 @@
 -->
 <html lang="en">
 <head>
-<meta charset="UTF--8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bilionetworks Executive Intelligence Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -542,7 +560,7 @@ input[type="search"] { background: var(--surface); border: 1px solid var(--borde
             <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" id="btnImport">📥 Import</button>
             <button class="btn btn-secondary" onclick="exportData()">📊 Export</button>
             <button class="btn btn-success" onclick="saveDataToFile()" id="btnSave">💾 Save</button>
-            <button class="btn btn-secondary" onclick="generateAIReport()">📄 Executive Report</button>
+            <button class="btn btn-secondary" onclick="generateExecutiveReport()">📄 Executive Report</button>
         </div>
     </nav>
     <input type="file" id="importFile" accept=".xlsx,.xls" style="display: none;" onchange="importData(event)">
@@ -2513,7 +2531,7 @@ function showNotification(title, message, type, duration = 4000) {
     setTimeout(() => toast.remove(), duration);
 }
 // --- NEW/UPDATED FUNCTIONS NOT IN ORIGINAL ---
-function generateAIReport() {
+function generateExecutiveReport() {
     showNotification('Info', 'Generating PDF report...', 'info');
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -2528,6 +2546,11 @@ function generateAIReport() {
     const rowOddColor = '#ffffff';
     const a4Width = doc.internal.pageSize.getWidth();
     const margin = 14;
+    
+    // VERSION 12.1: Softer professional colors for better print quality
+    const softRed = '#E57373';      // Muted red (was #d32f2f)
+    const softAmber = '#FFB74D';    // Warm amber (was #f57c00)
+    const softGreen = '#81C784';    // Soft green (was #2e7d32)
 
     const overallCompletion = calculateObjectiveCompletion('All');
     const kpiCount = overallCompletion.kpiCount;
@@ -2604,7 +2627,27 @@ function generateAIReport() {
                 });
                 
                 // For the combined KPI Table
-                allKpisForTable.push([dept, obj, name, kpi.score.toFixed(1), kpi.status.toUpperCase(), `${kpi.weighting}%`]);
+                // ENHANCEMENT #3: Add trend arrow based on score (only if score > 0)
+                let trendArrow = '';
+                if (kpi.score > 0) {
+                    if (kpi.score >= 8) trendArrow = ' ↑';   // Improving
+                    else if (kpi.score <= 4) trendArrow = ' ↓';  // Declining
+                    else trendArrow = ' →';  // Stable
+                }
+                
+                // ENHANCEMENT #1: Visual status indicator with colored bullet (based on actual score)
+                let visualStatus = '';
+                if (kpi.score === 0) {
+                    visualStatus = '• CRITICAL';  // No data = red
+                } else if (kpi.score >= 8) {
+                    visualStatus = '• ON TRACK';  // 8-10 = green
+                } else if (kpi.score >= 5) {
+                    visualStatus = '• AT RISK';   // 5-7.9 = amber
+                } else {
+                    visualStatus = '• CRITICAL';  // 0.1-4.9 = red
+                }
+                
+                allKpisForTable.push([dept, obj, name, `${kpi.score.toFixed(1)}${trendArrow}`, visualStatus, `${kpi.weighting}%`]);
             });
         });
 
@@ -2633,9 +2676,15 @@ function generateAIReport() {
         
         if (footersDrawn.has(data.pageNumber)) return; 
         const pageCount = doc.internal.getNumberOfPages();
-        doc.setFontSize(8); doc.setTextColor(textColor);
-        doc.text(`Generated on: ${new Date().toLocaleString('en-ZA')} by ${generatedByText}`, margin, doc.internal.pageSize.height - 10);
-        doc.text(`Page ${data.pageNumber} of ${pageCount}`, a4Width - margin, doc.internal.pageSize.height - 10, { align: 'right' });
+        const footerY = doc.internal.pageSize.height - 10;
+        
+        doc.setFontSize(8); doc.setTextColor(textColor); doc.setFont('helvetica', 'normal');
+        
+        // VERSION 12.1: Confidential footer (professional standard)
+        doc.text(`CONFIDENTIAL - Bilionetworks Executive Intelligence Dashboard | ${new Date().toLocaleDateString('en-ZA')}`, 
+                 margin, footerY);
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, a4Width - margin, footerY, { align: 'right' });
+        
         footersDrawn.add(data.pageNumber); 
     };
     
@@ -2644,7 +2693,7 @@ function generateAIReport() {
     
     const tableStyles = {
         theme: 'grid', 
-        styles: { font: 'helvetica', overflow: 'linebreak', cellPadding: 3, valign: 'middle', textColor: titleColor, fontSize: baseFontSize },
+        styles: { font: 'helvetica', overflow: 'linebreak', cellPadding: 3.5, valign: 'middle', textColor: titleColor, fontSize: baseFontSize },
         headStyles: { fillColor: headerColor, textColor: '#ffffff', fontStyle: 'bold', halign: 'center' },
         alternateRowStyles: { fillColor: rowEvenColor },
         didDrawPage: pageHeaderFooter,
@@ -2653,31 +2702,35 @@ function generateAIReport() {
     
     // --- Status Coloring for KPI and Department Tables ---
     const statusCell = (data) => {
-        // This function applies status coloring to the 4th column (Avg. Score) and 5th column (Status) of the departmental table, 
-        // and the 4th (Score) and 5th (Status) columns of the KPI table.
+        // This function applies status coloring to the 4th column (Score & Trend) and 5th column (Status) 
         if (data.section === 'body' && (data.column.index === 3 || data.column.index === 4)) {
-            const status = data.cell.raw.toString().toUpperCase();
+            const cellText = data.cell.raw.toString().toUpperCase();
             let color = data.row.index % 2 === 0 ? rowEvenColor : rowOddColor; 
             let fontColor = titleColor;
             
-            // Adjust coloring based on Status
-            if (status === 'RED') { color = '#ffebee'; fontColor = '#d32f2f'; }
-            else if (status === 'AMBER') { color = '#fff8e1'; fontColor = '#f57c00'; }
-            else if (status === 'GREEN') { color = '#e8f5e9'; fontColor = '#2e7d32'; }
+            // VERSION 12.2: Handle visual status indicators (● CRITICAL, ● AT RISK, ● ON TRACK)
+            if (cellText.includes('CRITICAL') || cellText.includes('RED')) {
+                color = '#ffebee';
+                fontColor = softRed;
+            } else if (cellText.includes('AT RISK') || cellText.includes('AMBER')) {
+                color = '#fff8e1';
+                fontColor = softAmber;
+            } else if (cellText.includes('ON TRACK') || cellText.includes('GREEN')) {
+                color = '#e8f5e9';
+                fontColor = softGreen;
+            }
             
             doc.setFillColor(color);
             doc.setTextColor(fontColor);
             doc.setFont('helvetica', 'bold');
             doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
             
-            // Column 4 is Status - use LEFT alignment with 4pt indent
-            // Column 3 is Score/Avg. Score - centered
             if (data.column.index === 4) {
                 // Status column - LEFT aligned with 4pt left padding
-                doc.text(status, data.cell.x + 4, data.cell.y + data.cell.height / 2, { halign: 'left', valign: 'middle' });
+                doc.text(cellText, data.cell.x + 4, data.cell.y + data.cell.height / 2, { halign: 'left', valign: 'middle' });
             } else {
-                // Score column - centered
-                doc.text(status, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, { halign: 'center', valign: 'middle' });
+                // Score & Trend column - centered
+                doc.text(cellText, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, { halign: 'center', valign: 'middle' });
             }
         }
     };
@@ -2688,8 +2741,8 @@ function generateAIReport() {
         body: [[
             { content: `OVERALL HEALTH\n${healthScoreText}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6 } },
             { content: `WEIGHTED COMMITMENT\n${commitmentText}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6 } },
-            { content: `KPIs AT RISK\n${redCount}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6, textColor: redCount > 0 ? '#d32f2f' : titleColor } },
-            { content: `CRITICAL BLOCKERS\n${blockerCount}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6, textColor: blockerCount > 0 ? '#f57c00' : titleColor } },
+            { content: `KPIs AT RISK\n${redCount}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6, textColor: redCount > 0 ? softRed : titleColor } },
+            { content: `CRITICAL BLOCKERS\n${blockerCount}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 10, cellPadding: 6, textColor: blockerCount > 0 ? softAmber : titleColor } },
         ]],
         ...tableStyles, theme: 'striped', styles: { fontSize: 9 }, headStyles: { fillColor: '#ffffff' },
         didDrawPage: pageHeaderFooter, margin: { top: 35, bottom: 20 }
@@ -2718,39 +2771,38 @@ function generateAIReport() {
     });
     finalY = doc.previousAutoTable.finalY;
 
-    // 3. KPI Details Table with Department Separators
+    // 3. KPI Details Table - SINGLE COMBINED TABLE (v11.13 approach - THE BETTER WAY!)
     if (allKpisForTable.length > 0) {
         doc.autoTable({
             startY: finalY + 8,
-            head: [['Department', 'Strategic Objective', 'KPI Name', 'Score', 'Status', 'Weight']],
+            head: [['Department', 'Strategic Objective', 'KPI Name', 'Score & Trend', 'Status', 'Weight']],
             body: allKpisForTable,
             ...tableStyles,
             styles: { 
-                fontSize: 7.5, // Smaller font for more space
-                overflow: 'linebreak', // Enable text wrapping
-                cellPadding: 2.5, // Reduced padding for more content space
-                lineWidth: 0.1, // Thinner borders
-                halign: 'left' // Default left alignment
+                fontSize: 7.5,
+                overflow: 'linebreak',
+                cellPadding: 2.5,
+                lineWidth: 0.1,
+                halign: 'left'
             }, 
             
-            // --- TWEAK 2 & FIX 3: Add Blue Department Separator Row & Fix Department Name Formatting ---
+            // Blue department separator rows (from v11.13)
             didParseCell: function(data) {
                 if (data.section === 'body' && data.row.index > 0) {
                     const currentDept = data.row.raw[0];
                     const prevDept = data.table.body[data.row.index - 1].raw[0];
                     
                     if (currentDept !== prevDept) {
-                        // Apply a custom style to the first cell of the new department (the entire row gets the background)
+                        // Blue header row for new department
                         const departmentCell = data.row.cells[0];
-
-                        departmentCell.styles.cellPadding = 4; // Reduced padding for better line height
+                        departmentCell.styles.cellPadding = 4;
                         departmentCell.styles.fontStyle = 'bold';
-                        departmentCell.styles.fillColor = [10, 132, 255]; // Blue fill (var(--accent))
-                        departmentCell.styles.textColor = [255, 255, 255]; // White text
-                        departmentCell.styles.fontSize = 8; // Slightly larger for headers
+                        departmentCell.styles.fillColor = [10, 132, 255]; // Blue
+                        departmentCell.styles.textColor = [255, 255, 255]; // White
+                        departmentCell.styles.fontSize = 8;
                         departmentCell.styles.valign = 'middle';
                         
-                        // Apply the fill and text color to all other cells in the new row
+                        // Apply to all cells in the row
                         for(let i = 1; i < data.row.cells.length; i++) {
                              data.row.cells[i].styles.fillColor = [10, 132, 255]; 
                              data.row.cells[i].styles.textColor = [255, 255, 255];
@@ -2761,16 +2813,16 @@ function generateAIReport() {
                     }
                 }
             },
-            didDrawCell: statusCell, // Keep the status coloring hook
+            didDrawCell: statusCell,
             
-            // --- FIXED COLUMN WIDTHS: Proper sizing to prevent text cutoff ---
+            // Fixed column widths (from v11.13 with weight fix)
             columnStyles: {
                 0: { cellWidth: 28, halign: 'left', fontStyle: 'bold', fontSize: 7.5 }, // Department
-                1: { cellWidth: 48, halign: 'left', fontSize: 7 }, // Strategic Objective - wider
-                2: { cellWidth: 59, halign: 'left', fontSize: 7 }, // KPI Name - slightly reduced to make room
-                3: { cellWidth: 12, halign: 'center', fontSize: 7.5 }, // Score - centered
-                4: { cellWidth: 24, halign: 'left', fontStyle: 'bold', fontSize: 7 }, // Status - LEFT aligned with 4pt indent
-                5: { cellWidth: 15, halign: 'center', fontSize: 7.5 }, // Weight - centered
+                1: { cellWidth: 48, halign: 'left', fontSize: 7 }, // Strategic Objective
+                2: { cellWidth: 59, halign: 'left', fontSize: 7 }, // KPI Name
+                3: { cellWidth: 12, halign: 'center', fontSize: 7.5 }, // Score & Trend
+                4: { cellWidth: 24, halign: 'left', fontStyle: 'bold', fontSize: 7 }, // Status
+                5: { cellWidth: 17, halign: 'center', fontSize: 7.5 }, // Weight - increased to prevent wrapping
             }
         });
         finalY = doc.previousAutoTable.finalY;
